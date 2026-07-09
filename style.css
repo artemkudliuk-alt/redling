@@ -37,7 +37,8 @@ body {
   line-height: 1.5;
   height: 100%;
   margin: 0;
-  touch-action: none;
+  /* Note: no touch-action:none here — it would break native inner scrolling
+     of tall mobile sections; JS touchmove preventDefault blocks page panning */
 }
 
 /* Preloader Screen */
@@ -1182,12 +1183,18 @@ h1, h2, h3, h4, h5, h6 {
     width: 100%;
   }
 
+  /* Mobile: each screen is a fixed viewport that scrolls its own content,
+     so tall sections (contacts with map, restaurant) are fully reachable */
   .content-section {
     padding: 0;
     align-items: flex-start;
-    height: auto;
-    min-height: 100vh;
-    min-height: 100dvh;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+    touch-action: pan-y;
   }
 
   .section-card.glass {
@@ -1201,7 +1208,43 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .section-title {
-    font-size: 32px;
+    /* 7vw keeps the longest words (ГАСТРОНОМИЧЕСКАЯ) inside a 375px viewport */
+    font-size: clamp(24px, 7vw, 32px);
+    overflow-wrap: break-word;
+  }
+
+  /* Prevent grid blowout: long unbreakable uppercase words must shrink
+     the column instead of widening it past the viewport edges */
+  #rooms .rooms-text-col,
+  #rooms .rooms-benefits-col,
+  #restaurant .restaurant-text-col,
+  #restaurant .restaurant-actions-col,
+  #contacts .contacts-info-col,
+  #contacts .contacts-map-col {
+    min-width: 0;
+  }
+
+  /* Benefits: 2×2 wrap instead of one cramped row */
+  .benefits-row {
+    flex-wrap: wrap;
+    row-gap: 20px;
+  }
+  .benefit-item-clean {
+    flex: 1 1 40%;
+  }
+
+  /* Translucent plates so small text stays readable over the video */
+  #contacts .facts-grid,
+  #contacts .contacts-info {
+    background: rgba(12, 14, 18, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0;
+    padding: 16px 18px;
+  }
+  #contacts .contacts-info {
+    padding-top: 16px;
   }
 
   .brand-title-large {
@@ -1266,6 +1309,9 @@ h1, h2, h3, h4, h5, h6 {
     max-width: 100%;
     padding: 0;
     align-self: auto;
+  }
+  #restaurant .buttons-group {
+    flex-wrap: wrap;
   }
 
   /* Contacts split container mobile stack fallback */

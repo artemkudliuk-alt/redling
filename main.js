@@ -121,7 +121,17 @@ function updateActiveSection(index) {
   const sections = document.querySelectorAll('.content-section');
   sections.forEach((sec, idx) => {
     sec.classList.toggle('active', idx === index);
+    if (idx === index) sec.scrollTop = 0; // mobile sections scroll internally
   });
+}
+
+// Mobile screens taller than the viewport scroll natively before the
+// slider flips to the next screen; returns null on desktop widths.
+function getScrollableActiveSection() {
+  if (window.innerWidth > 991) return null;
+  const sec = document.querySelector('.content-section.active');
+  if (sec && sec.scrollHeight > sec.clientHeight + 1) return sec;
+  return null;
 }
 
 // ============================
@@ -399,6 +409,14 @@ let wheelAccumulator = 0;
 const WHEEL_THRESHOLD = 50;
 
 function handleWheel(e) {
+  // Let a tall mobile section scroll its own content before flipping screens
+  const scrollable = getScrollableActiveSection();
+  if (scrollable) {
+    const atTop = scrollable.scrollTop <= 0;
+    const atBottom = scrollable.scrollTop + scrollable.clientHeight >= scrollable.scrollHeight - 1;
+    if ((e.deltaY > 0 && !atBottom) || (e.deltaY < 0 && !atTop)) return;
+  }
+
   e.preventDefault();
   if (isTransitioning) return;
 
@@ -423,15 +441,30 @@ document.addEventListener('wheel', handleWheel, { passive: false });
 // 10. Touch support (mobile swipe)
 // ============================
 let touchStartY = 0;
+let touchStartScrollTop = 0;
 const SWIPE_THRESHOLD = 60;
 
 document.addEventListener('touchstart', (e) => {
   touchStartY = e.touches[0].clientY;
+  const sec = document.querySelector('.content-section.active');
+  touchStartScrollTop = sec ? sec.scrollTop : 0;
 }, { passive: true });
 
 document.addEventListener('touchend', (e) => {
   if (isTransitioning) return;
   const diff = touchStartY - e.changedTouches[0].clientY;
+
+  // A tall mobile section scrolls natively first: flip screens only from
+  // its very edges, and never in the same gesture that scrolled content
+  const scrollable = getScrollableActiveSection();
+  if (scrollable) {
+    if (Math.abs(scrollable.scrollTop - touchStartScrollTop) > 2) return;
+    const atTop = scrollable.scrollTop <= 1;
+    const atBottom = scrollable.scrollTop + scrollable.clientHeight >= scrollable.scrollHeight - 2;
+    if (diff > 0 && !atBottom) return;
+    if (diff < 0 && !atTop) return;
+  }
+
   if (diff > SWIPE_THRESHOLD && currentScreen < TOTAL_SCREENS - 1) {
     goToScreen(currentScreen + 1);
   } else if (diff < -SWIPE_THRESHOLD && currentScreen > 0) {
@@ -439,7 +472,13 @@ document.addEventListener('touchend', (e) => {
   }
 }, { passive: true });
 
-document.addEventListener('touchmove', (e) => { e.preventDefault(); }, { passive: false });
+document.addEventListener('touchmove', (e) => {
+  // Native scrolling stays enabled inside a tall active section;
+  // everything else is blocked (kills iOS rubber-band bounce)
+  const scrollable = getScrollableActiveSection();
+  if (scrollable && scrollable.contains(e.target)) return;
+  e.preventDefault();
+}, { passive: false });
 
 // ============================
 // 11. Keyboard (arrows, page keys)
