@@ -906,6 +906,13 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: 0.5px;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
 }
+.work-hours-row {
+  display: block;
+  margin-bottom: 6px;
+}
+.work-hours-row:last-child {
+  margin-bottom: 0;
+}
 .work-hours-label {
   color: var(--color-primary);
   font-weight: 600;
@@ -1272,10 +1279,15 @@ h1, h2, h3, h4, h5, h6 {
   /* Benefits: 2×2 wrap instead of one cramped row */
   .benefits-row {
     flex-wrap: wrap;
-    row-gap: 20px;
+    row-gap: 12px; /* Tightened from 20px */
+    column-gap: 12px;
   }
   .benefit-item-clean {
     flex: 1 1 40%;
+    gap: 4px; /* Tightened from 8px */
+  }
+  .benefit-item-clean span {
+    font-size: 11px; /* Slightly smaller to prevent text wrapping/bloat */
   }
 
   /* Translucent plates so small text stays readable over the video */
@@ -1322,13 +1334,16 @@ h1, h2, h3, h4, h5, h6 {
     height: auto;
     min-height: 100vh;
     min-height: 100dvh;
-    gap: 40px;
-    padding: 100px 24px 40px;
+    gap: 20px;
+    padding: 80px 24px 20px;
   }
   #rooms .rooms-text-col {
     height: auto;
     padding: 0;
     background: none;
+  }
+  #rooms .section-text {
+    margin-bottom: 16px;
   }
   #rooms .rooms-benefits-col {
     height: auto;
@@ -1341,13 +1356,16 @@ h1, h2, h3, h4, h5, h6 {
     height: auto;
     min-height: 100vh;
     min-height: 100dvh;
-    gap: 40px;
-    padding: 100px 24px 40px;
+    gap: 20px;
+    padding: 80px 24px 20px;
   }
   #restaurant .restaurant-text-col {
     height: auto;
     padding: 0;
     align-self: auto;
+  }
+  #restaurant .section-text {
+    margin-bottom: 16px;
   }
   #restaurant .restaurant-actions-col {
     height: auto;
@@ -1365,8 +1383,8 @@ h1, h2, h3, h4, h5, h6 {
     height: auto;
     min-height: 100vh;
     min-height: 100dvh;
-    gap: 40px;
-    padding: 100px 24px 40px;
+    gap: 20px;
+    padding: 80px 24px 20px;
   }
   #contacts .contacts-info-col {
     height: auto;
