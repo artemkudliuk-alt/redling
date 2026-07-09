@@ -556,6 +556,7 @@ const i18nData = {
     "atmosphere.subtitle": "★ Об отеле",
     "atmosphere.title": "Атмосфера, в которую<br>хочется возвращаться",
     "atmosphere.text": "Redling — это сочетание искреннего одесского гостеприимства и европейского сервиса. Мы создали пространство, где вы чувствуете себя абсолютно свободно, окруженные заботой нашей команды 24/7.",
+    "atmosphere.gallery_btn": "Посмотреть фото",
     "contacts.subtitle": "★ Локация и Контакты",
     "contacts.title": "Ждем вас<br>в Redling",
     "contacts.fact1": "500 метров до моря — 7 минут пешком",
@@ -604,6 +605,7 @@ const i18nData = {
     "atmosphere.subtitle": "★ About Hotel",
     "atmosphere.title": "Atmosphere you<br>want to return to",
     "atmosphere.text": "Redling is a combination of genuine Odesa hospitality and European service. We have created a space where you feel absolutely free, surrounded by the care of our team 24/7.",
+    "atmosphere.gallery_btn": "See photos",
     "contacts.subtitle": "★ Location & Contacts",
     "contacts.title": "Waiting for you<br>at Redling",
     "contacts.fact1": "500 meters to the sea — 7 minutes walk",
@@ -636,7 +638,7 @@ const i18nData = {
     "rooms.benefit2": "Матраци",
     "rooms.benefit3": "Wi-Fi",
     "rooms.benefit4": "Міні-бар",
-    "pool.subtitle": "★ Басейн та Літня зона",
+    "pool.subtitle": "★ Басейни та Літня зона",
     "pool.title": "Освіжаючий<br>літній вайб",
     "pool.text": "Величезний відкритий басейн (80 м²) з лаунж-зоною та зручними шезлонгами. Ідеальне місце, щоб зловити ледачий курортний настрій, не покидаючи територію готелю.",
     "pool.benefit1": "80 м² басейн",
@@ -652,6 +654,7 @@ const i18nData = {
     "atmosphere.subtitle": "★ Про готель",
     "atmosphere.title": "Атмосфера, в яку<br>хочеться повертатися",
     "atmosphere.text": "Redling — це поєднання щирої одеської гостинності та європейського сервісу. Ми створили простір, де ви почуваєтеся абсолютно вільно, оточені турботою нашої команди 24/7.",
+    "atmosphere.gallery_btn": "Подивитися фото",
     "contacts.subtitle": "★ Локація та Контакты",
     "contacts.title": "Чекаємо на вас<br>в Redling",
     "contacts.fact1": "500 метрів до моря — 7 хвилин пішки",
@@ -698,3 +701,182 @@ function initTranslations() {
 
 // Start translations immediately
 initTranslations();
+
+// ============================================================
+// 15. Fullscreen Swipeable Photo Gallery
+// ============================================================
+function initPhotoGallery() {
+  const openGalleryBtn = document.getElementById('openGalleryBtn');
+  const galleryModal = document.getElementById('galleryModal');
+  const closeGalleryBtn = document.getElementById('closeGalleryBtn');
+  const wrapper = document.getElementById('galleryWrapper');
+  const prevBtn = document.getElementById('galleryPrevBtn');
+  const nextBtn = document.getElementById('galleryNextBtn');
+  const dots = document.querySelectorAll('.gallery-dot');
+  
+  if (!openGalleryBtn || !galleryModal || !closeGalleryBtn || !wrapper) return;
+  
+  let currentIdx = 0;
+  const totalSlides = 10;
+  
+  // Dragging / swiping state
+  let isDragging = false;
+  let startX = 0;
+  let currentTranslate = 0;
+  let prevTranslate = 0;
+  
+  const getPositionX = (event) => {
+    return event.type.includes('mouse') ? event.pageX : event.touches[0].clientX;
+  };
+  
+  const setSliderTranslate = (translate) => {
+    currentTranslate = translate;
+    wrapper.style.transform = `translateX(${currentTranslate}px)`;
+  };
+  
+  const setPositionByIndex = () => {
+    const slideWidth = wrapper.offsetWidth;
+    currentTranslate = -currentIdx * slideWidth;
+    prevTranslate = currentTranslate;
+    wrapper.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
+    wrapper.style.transform = `translateX(${currentTranslate}px)`;
+    
+    // Update dots
+    dots.forEach((dot, index) => {
+      dot.classList.toggle('active', index === currentIdx);
+    });
+  };
+  
+  const nextSlide = () => {
+    if (currentIdx < totalSlides - 1) {
+      currentIdx++;
+    } else {
+      currentIdx = 0; // wrap around
+    }
+    setPositionByIndex();
+  };
+  
+  const prevSlide = () => {
+    if (currentIdx > 0) {
+      currentIdx--;
+    } else {
+      currentIdx = totalSlides - 1; // wrap around
+    }
+    setPositionByIndex();
+  };
+  
+  // Open / Close Modal
+  openGalleryBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    galleryModal.style.display = 'flex';
+    setTimeout(() => {
+      galleryModal.classList.add('show');
+      setPositionByIndex(); // recalculate size after display: flex
+    }, 10);
+    
+    // Disable scroll on parent page
+    document.body.style.overflow = 'hidden';
+  });
+  
+  const closeModal = () => {
+    galleryModal.classList.remove('show');
+    setTimeout(() => {
+      galleryModal.style.display = 'none';
+      document.body.style.overflow = 'hidden'; // preserve website slider overflow
+    }, 300);
+  };
+  
+  closeGalleryBtn.addEventListener('click', closeModal);
+  galleryModal.addEventListener('click', (e) => {
+    if (e.target === galleryModal) {
+      closeModal();
+    }
+  });
+  
+  // Nav buttons
+  nextBtn.addEventListener('click', nextSlide);
+  prevBtn.addEventListener('click', prevSlide);
+  
+  // Dot indicators
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      currentIdx = parseInt(dot.getAttribute('data-index'));
+      setPositionByIndex();
+    });
+  });
+  
+  // Recalculate positions on window resize
+  window.addEventListener('resize', setPositionByIndex);
+  
+  // Swipe / Drag Events
+  const dragStart = (event) => {
+    isDragging = true;
+    startX = getPositionX(event);
+    wrapper.style.transition = 'none'; // Instant response on drag
+    
+    if (event.type.includes('touch')) {
+      // Let touch events propagate but prevent default window movements
+    } else {
+      event.preventDefault();
+    }
+  };
+  
+  const dragMove = (event) => {
+    if (!isDragging) return;
+    const currentX = getPositionX(event);
+    const diff = currentX - startX;
+    
+    let targetTranslate = prevTranslate + diff;
+    const maxTranslate = 0;
+    const minTranslate = -(totalSlides - 1) * wrapper.offsetWidth;
+    
+    // Resistance at bounds
+    if (targetTranslate > maxTranslate) {
+      targetTranslate = maxTranslate + (targetTranslate - maxTranslate) * 0.3;
+    } else if (targetTranslate < minTranslate) {
+      targetTranslate = minTranslate + (targetTranslate - minTranslate) * 0.3;
+    }
+    
+    setSliderTranslate(targetTranslate);
+  };
+  
+  const dragEnd = () => {
+    if (!isDragging) return;
+    isDragging = false;
+    
+    const diff = currentTranslate - prevTranslate;
+    const threshold = 60;
+    
+    if (diff < -threshold && currentIdx < totalSlides - 1) {
+      currentIdx++;
+    } else if (diff > threshold && currentIdx > 0) {
+      currentIdx--;
+    }
+    
+    setPositionByIndex();
+  };
+  
+  // Attach touch/mouse listeners
+  wrapper.addEventListener('touchstart', dragStart, { passive: true });
+  wrapper.addEventListener('touchmove', dragMove, { passive: true });
+  wrapper.addEventListener('touchend', dragEnd);
+  
+  wrapper.addEventListener('mousedown', dragStart);
+  wrapper.addEventListener('mousemove', dragMove);
+  wrapper.addEventListener('mouseup', dragEnd);
+  wrapper.addEventListener('mouseleave', dragEnd);
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (!galleryModal.classList.contains('show')) return;
+    if (e.key === 'ArrowRight') {
+      nextSlide();
+    } else if (e.key === 'ArrowLeft') {
+      prevSlide();
+    } else if (e.key === 'Escape') {
+      closeModal();
+    }
+  });
+}
+
+initPhotoGallery();

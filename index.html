@@ -235,6 +235,9 @@
           <p class="section-subtitle" data-i18n="atmosphere.subtitle">★ Об отеле</p>
           <h2 class="section-title" data-i18n="atmosphere.title">Атмосфера, в которую<br>хочется возвращаться</h2>
           <p class="section-text" data-i18n="atmosphere.text">Redling — это сочетание искреннего одесского гостеприимства и европейского сервиса. Мы создали пространство, где вы чувствуете себя абсолютно свободно, окруженные заботой нашей команды 24/7.</p>
+          <div class="buttons-group" style="margin-top: 24px;">
+            <button id="openGalleryBtn" class="btn-cta" data-i18n="atmosphere.gallery_btn">Посмотреть фото</button>
+          </div>
         </div>
       </section>
 
@@ -299,6 +302,44 @@
       <div class="iframe-container">
         <iframe id="youtubeIframe" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
       </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Photo Gallery Modal -->
+  <div id="galleryModal" class="gallery-modal">
+    <button id="closeGalleryBtn" class="close-gallery-btn" aria-label="Закрыть галерею">&times;</button>
+    
+    <div class="gallery-slider-container">
+      <div class="gallery-wrapper" id="galleryWrapper">
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo1.jpg" alt="Atmosphere 1" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo2.jpg" alt="Atmosphere 2" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo3.jpg" alt="Atmosphere 3" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo4.jpg" alt="Atmosphere 4" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo5.jpg" alt="Atmosphere 5" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo6.jpg" alt="Atmosphere 6" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo7.jpg" alt="Atmosphere 7" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo8.jpg" alt="Atmosphere 8" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo9.jpg" alt="Atmosphere 9" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo10.jpg" alt="Atmosphere 10" loading="lazy"></div>
+      </div>
+      
+      <!-- Nav Arrows -->
+      <button class="gallery-arrow prev" id="galleryPrevBtn" aria-label="Предыдущий слайд">&#10094;</button>
+      <button class="gallery-arrow next" id="galleryNextBtn" aria-label="Следующий слайд">&#10095;</button>
+    </div>
+
+    <!-- Indicators -->
+    <div class="gallery-dots" id="galleryDots">
+      <span class="gallery-dot active" data-index="0"></span>
+      <span class="gallery-dot" data-index="1"></span>
+      <span class="gallery-dot" data-index="2"></span>
+      <span class="gallery-dot" data-index="3"></span>
+      <span class="gallery-dot" data-index="4"></span>
+      <span class="gallery-dot" data-index="5"></span>
+      <span class="gallery-dot" data-index="6"></span>
+      <span class="gallery-dot" data-index="7"></span>
+      <span class="gallery-dot" data-index="8"></span>
+      <span class="gallery-dot" data-index="9"></span>
     </div>
   </div>
 
