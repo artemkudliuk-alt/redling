@@ -669,14 +669,16 @@ h1, h2, h3, h4, h5, h6 {
 
 #atmosphere.content-section {
   align-items: center;
-  justify-content: flex-start;
+  justify-content: flex-end; /* Shift the card to the right side */
 }
 #atmosphere .section-card.glass {
-  text-align: left;
+  text-align: right; /* Right align the text */
   max-width: 650px;
-  padding-left: 80px;
-  align-items: flex-start;
+  padding-right: 80px; /* Symmetry with other layouts */
+  padding-left: 0;
+  align-items: flex-end; /* Align the gallery button to the right */
   justify-content: center;
+  margin-top: -60px; /* Nudge slightly up */
 }
 
 #contacts.content-section {
@@ -1255,6 +1257,17 @@ h1, h2, h3, h4, h5, h6 {
   }
   #contacts .map-wrapper {
     height: 320px;
+  }
+
+  /* Atmosphere mobile layout overrides */
+  #atmosphere.content-section {
+    justify-content: center;
+  }
+  #atmosphere .section-card.glass {
+    text-align: center;
+    align-items: center;
+    padding: 100px 24px 40px;
+    margin-top: 0;
   }
 }
 
