@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REDLING HOTEL — ваш уютный дом у моря в Одессе</title>
+  <meta name="description" content="Семейный мини-отель (4 звездочная гостиница) в Одессе на берегу моря с бассейном. ⭐ Redling - Ул. Дача Ковалевского, 71.">
+  
+  <!-- Google Fonts: Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" type="image/png" href="/assets/img/logo.svg">
+</head>
+<body>
+
+  <!-- Mobile Header -->
+  <header class="mobile-header">
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="#" class="mobile-logo-link">
+      <img src="/assets/img/logo.svg" alt="Redling Hotel Logo" class="mobile-logo-img">
+    </a>
+    <a href="tel:+380677387700" class="mobile-phone-btn" aria-label="Call Reception">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+    </a>
+  </header>
+
+  <!-- Left Fixed Sidebar -->
+  <aside class="page-side" id="sidebar">
+    <div class="sidebar-logo">
+      <a href="#"><img src="/assets/img/logo.svg" alt="Redling Hotel" class="logo-img"></a>
+    </div>
+    <nav class="sidebar-nav">
+      <ul class="menu">
+        <li><a href="#hero" class="menu-link active">Главная</a></li>
+        <li><a href="#rooms" class="menu-link">Номера</a></li>
+        <li><a href="#pool" class="menu-link">Бассейн и Летняя зона</a></li>
+        <li><a href="#restaurant" class="menu-link">Ресторан</a></li>
+        <li><a href="#atmosphere" class="menu-link">Атмосфера</a></li>
+        <li><a href="#contacts" class="menu-link">Контакты</a></li>
+        <li class="action-stock"><a href="https://redling-hotel.com.ua/action/" target="_blank">★ АКЦИИ ★</a></li>
+      </ul>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="phone-dropdown" id="phoneDropdown">
+        <button class="phone-selected" id="phoneBtn">
+          <span>(067) 738 77 00</span>
+          <svg class="chevron-icon" width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5 5L9 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="phone-drop" id="phoneDropMenu">
+          <a href="tel:+380677387700" class="drop-link phone-call-link">(067) 738 77 00</a>
+          <div class="messenger-links">
+            <a href="viber://chat?number=%2B380671246165" class="messenger-btn viber">Viber</a>
+            <a href="https://wa.me/380671246165" class="messenger-btn whatsapp">WhatsApp</a>
+            <a href="https://t.me/redling_restaurant" class="messenger-btn telegram">Telegram</a>
+          </div>
+        </div>
+      </div>
+      <div class="sidebar-socials">
+        <a href="https://www.facebook.com/redlinghotel/" target="_blank" aria-label="Facebook">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+        </a>
+        <a href="https://www.instagram.com/redlinghotel/" target="_blank" aria-label="Instagram">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+        </a>
+        <a href="https://www.tripadvisor.ru/Hotel_Review-g295368-d17427032-Reviews-Redling_Hotel-Odessa_Odessa_Oblast.html" target="_blank" aria-label="TripAdvisor">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        </a>
+      </div>
+      <div class="sidebar-lang">
+        <a href="#" class="lang-link">en</a>
+        <a href="#" class="lang-link active">ru</a>
+        <a href="#" class="lang-link">ua</a>
+      </div>
+      <div class="creator-credits"><span>Создание сайта</span> — Nextweb</div>
+    </div>
+  </aside>
+
+  <!-- Right Main Area -->
+  <main class="main-content">
+    <div class="video-background-container">
+      <!-- Screen 0: Hero (loop) -->
+      <video id="videoHero" class="bg-video active" muted playsinline loop autoplay preload="auto" poster="/assets/video/hero_poster.jpg" src="/assets/video/hero.mp4"></video>
+
+      <!-- Screen 1: Rooms — forward & reverse -->
+      <video id="videoRooms" class="bg-video" muted playsinline preload="auto" src="/assets/video/rooms.mp4"></video>
+      <video id="videoRoomsRev" class="bg-video" muted playsinline preload="auto" src="/assets/video/rooms_reverse.mp4"></video>
+
+      <!-- Screen 2: Pool — forward & reverse -->
+      <video id="videoPool" class="bg-video" muted playsinline preload="auto" src="/assets/video/pool.mp4"></video>
+      <video id="videoPoolRev" class="bg-video" muted playsinline preload="auto" src="/assets/video/pool_reverse.mp4"></video>
+
+      <!-- Screen 3: Restaurant — forward & reverse -->
+      <video id="videoRestaurant" class="bg-video" muted playsinline preload="auto" src="/assets/video/restaurant.mp4"></video>
+      <video id="videoRestaurantRev" class="bg-video" muted playsinline preload="auto" src="/assets/video/restaurant_reverse.mp4"></video>
+
+      <!-- Screen 4: Atmosphere — forward & reverse -->
+      <video id="videoAtmosphere" class="bg-video" muted playsinline preload="auto" src="/assets/video/atmosphere.mp4"></video>
+      <video id="videoAtmosphereRev" class="bg-video" muted playsinline preload="auto" src="/assets/video/atmosphere_reverse.mp4"></video>
+
+      <!-- Screen 5: Contacts — forward & reverse -->
+      <video id="videoContacts" class="bg-video" muted playsinline preload="auto" src="/assets/video/contacts.mp4"></video>
+      <video id="videoContactsRev" class="bg-video" muted playsinline preload="auto" src="/assets/video/contacts_reverse.mp4"></video>
+      
+      <div class="video-overlay"></div>
+    </div>
+
+    <!-- Foreground Content Sections -->
+    <div class="sections-container">
+      
+      <!-- Screen 0: Hero (Active on load) -->
+      <section id="hero" class="content-section active">
+        <div class="section-card glass">
+          <h1 class="main-title">
+            <span class="brand-title-large">REDLING HOTEL</span>
+            <span class="sub-title-large">ваш уютный дом у моря в Одессе</span>
+          </h1>
+          <div class="star-rating">
+            <svg class="star-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            <svg class="star-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            <svg class="star-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            <svg class="star-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          </div>
+          <p class="hero-subhead">Премиальный комфорт для семейного отдыха и деловых поездок.</p>
+          <p class="hero-text">Всего 500 метров до пляжа, вдали от городского шума.</p>
+          <div class="buttons-group">
+            <a href="https://redling-hotel.com.ua/booking/" target="_blank" class="btn-cta">Забронировать номер</a>
+            <a href="#" id="openVideoBtn" class="btn-youtube-sharp">
+              <svg class="youtube-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.518 3.545 12 3.545 12 3.545s-7.518 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.87.508 9.388.508 9.388.508s7.518 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+              </svg>
+              Смотреть видео
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 1: Rooms -->
+      <section id="rooms" class="content-section">
+        <div class="section-card glass rooms-split-container">
+          <div class="rooms-text-col">
+            <p class="section-subtitle">★ Дизайнерские номера с премиальным комфортом</p>
+            <h2 class="section-title">Пространство для идеального отдыха</h2>
+            <p class="section-text">Просторные дизайнерские номера с премиальной шумоизоляцией и ортопедическими матрасами. Здесь есть всё для глубокого сна после пляжа или продуктивной работы в тишине.</p>
+            <div class="buttons-group">
+              <a href="https://redling-hotel.com.ua/rooms/" target="_blank" class="btn-cta">Выбрать номер</a>
+            </div>
+          </div>
+          <div class="rooms-benefits-col">
+            <div class="benefits-row">
+              <div class="benefit-item-clean">
+                <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>Шумоизоляция</span>
+              </div>
+              <div class="benefit-item-clean">
+                <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20M2 14h20M6 14v6M18 14v6M11 6a3 3 0 0 1 6 0v8H5V6a3 3 0 0 1 6 0z"/></svg>
+                <span>Матрасы</span>
+              </div>
+              <div class="benefit-item-clean">
+                <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.94 0M12 20h.01"/></svg>
+                <span>Wi-Fi</span>
+              </div>
+              <div class="benefit-item-clean">
+                <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><path d="M6 1v3M10 1v3M14 1v3"/></svg>
+                <span>Мини-бар</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Screen 2: Pool -->
+      <section id="pool" class="content-section">
+        <div class="section-card glass">
+          <p class="section-subtitle">★ Бассейн и Летняя зона</p>
+          <h2 class="section-title">Освежающий<br>летний вайб</h2>
+          <p class="section-text">Огромный открытый бассейн (80 м²) с лаунж-зоной и удобными шезлонгами. Идеальное место, чтобы поймать ленивое курортное настроение, не покидая территорию отеля.</p>
+          
+          <div class="pool-features-row">
+            <div class="benefit-item-clean">
+              <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6c.6.5 1.2 1 2.5 1C6 7 7 6 8.5 6c1.5 0 2.5 1 4 1 1.5 0 2.5-1 4-1 1.5 0 2.5 1 4 1 1.3 0 1.9-.5 2.5-1M2 12c.6.5 1.2 1 2.5 1C6 13 7 12 8.5 12c1.5 0 2.5 1 4 1 1.5 0 2.5-1 4-1 1.5 0 2.5 1 4 1 1.3 0 1.9-.5 2.5-1M2 18c.6.5 1.2 1 2.5 1C6 19 7 18 8.5 18c1.5 0 2.5 1 4 1 1.5 0 2.5-1 4-1 1.5 0 2.5 1 4 1 1.3 0 1.9-.5 2.5-1"/></svg>
+              <span>80 м² бассейн</span>
+            </div>
+            <div class="benefit-item-clean">
+              <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12M12 12H4.5L12 3l7.5 9H12zM8 12a4 4 0 0 0 8 0"/></svg>
+              <span>Лаунж-бар</span>
+            </div>
+            <div class="benefit-item-clean">
+              <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M12 10a6 6 0 0 1 6 6M12 6a10 10 0 0 1 10 10M12 10a6 6 0 0 0-6 6M12 6a10 10 0 0 0-10 10"/></svg>
+              <span>Шезлонги</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 3: Restaurant -->
+      <section id="restaurant" class="content-section">
+        <div class="section-card glass restaurant-split-container">
+          <div class="restaurant-text-col">
+            <p class="section-subtitle">★ Ресторан Redling</p>
+            <h2 class="section-title">Гастрономическая<br>Одесса</h2>
+            <p class="section-text">Авторское прочтение черноморской и европейской кухни в стильном классическом интерьере. Лаундж-зона для неторопливых ужинов и раздельные залы для курящих и некурящих.</p>
+          </div>
+          
+          <div class="restaurant-actions-col">
+            <div class="buttons-group">
+              <a href="https://redling-hotel.com.ua/restaurant/" target="_blank" class="btn-cta">Забронировать столик</a>
+              <a href="https://redling-hotel.com.ua/restaurant/#menu" target="_blank" class="btn-secondary">Меню ресторана</a>
+            </div>
+            <p class="work-hours">
+              <span class="work-hours-label">Будни:</span> 11:00 – 22:00
+              &nbsp;&nbsp;|&nbsp;&nbsp;
+              <span class="work-hours-label">Выходные:</span> 10:00 – 24:00
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 4: Atmosphere -->
+      <section id="atmosphere" class="content-section">
+        <div class="section-card glass">
+          <p class="section-subtitle">★ Об отеле</p>
+          <h2 class="section-title">Атмосфера, в которую<br>хочется возвращаться</h2>
+          <p class="section-text">Redling — это сочетание искреннего одесского гостеприимства и европейского сервиса. Мы создали пространство, где вы чувствуете себя абсолютно свободно, окруженные заботой нашей команды 24/7.</p>
+        </div>
+      </section>
+
+      <!-- Screen 5: Contacts -->
+      <section id="contacts" class="content-section">
+        <div class="section-card glass contacts-split-container">
+          <div class="contacts-info-col">
+            <p class="section-subtitle">★ Локация и Контакты</p>
+            <h2 class="section-title">Ждем вас<br>в Redling</h2>
+            <div class="facts-grid">
+              <div class="fact-item">
+                <span class="fact-icon">🌊</span>
+                <span class="fact-label">500 метров до моря — 7 минут пешком</span>
+              </div>
+              <div class="fact-item">
+                <span class="fact-icon">🌳</span>
+                <span class="fact-label">ул. Дача Ковалевского, 71, Одесса</span>
+              </div>
+              <div class="fact-item">
+                <span class="fact-icon">🚗</span>
+                <span class="fact-label">10 км до центра — тихий, зелёный район</span>
+              </div>
+            </div>
+            <div class="contacts-info">
+              <div class="contact-row">
+                <span class="contact-name">Ресепшен</span>
+                <a href="tel:+380677387700" class="contact-val">(067) 738 77 00</a>
+              </div>
+              <div class="contact-row">
+                <span class="contact-name">Ресторан</span>
+                <a href="tel:+380671246165" class="contact-val">(067) 124 61 65</a>
+              </div>
+              <div class="contact-row">
+                <span class="contact-name">Email</span>
+                <a href="mailto:info@redling-hotel.com" class="contact-val">info@redling-hotel.com</a>
+              </div>
+            </div>
+            <div class="buttons-group">
+              <a href="https://maps.google.com/?q=ул.+Дача+Ковалевского+71+Одесса" target="_blank" class="btn-cta">Построить маршрут</a>
+            </div>
+          </div>
+          
+          <div class="contacts-map-col">
+            <div class="map-wrapper">
+              <iframe 
+                src="https://maps.google.com/maps?q=ул.%20Дача%20Ковалевского,%2071,%20Одесса&t=&z=15&ie=UTF8&iwloc=&output=embed" 
+                loading="lazy" 
+                allowfullscreen>
+              </iframe>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Fullscreen Video Lightbox Modal -->
+  <div id="videoModal" class="video-modal">
+    <div class="video-modal-content">
+      <button id="closeVideoBtn" class="close-video-btn" aria-label="Закрыть плеер">&times;</button>
+      <div class="iframe-container">
+        <iframe id="youtubeIframe" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
