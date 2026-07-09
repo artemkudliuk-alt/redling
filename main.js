@@ -518,3 +518,188 @@ if (preloader && preloaderBar && preloaderPercent) {
     heroVideo.play().catch(() => {});
   }
 }
+
+// ============================================================
+// 14. Internationalization (i18n)
+// ============================================================
+const i18nData = {
+  ru: {
+    "nav.hero": "Главная",
+    "nav.rooms": "Номера",
+    "nav.pool": "Бассейн и Летняя зона",
+    "nav.restaurant": "Ресторан",
+    "nav.atmosphere": "Атмосфера",
+    "nav.contacts": "Контакты",
+    "nav.offers": "★ АКЦИИ ★",
+    "credits.text": "Создание сайта",
+    "hero.subtitle": "ваш уютный дом у моря в Одессе",
+    "hero.subhead": "Премиальный комфорт для семейного отдыха и деловых поездок.",
+    "hero.text": "Всего 500 метров до пляжа, вдали от городского шума.",
+    "hero.cta": "Забронировать номер",
+    "hero.video": "Смотреть видео",
+    "rooms.subtitle": "★ Дизайнерские номера с премиальным комфортом",
+    "rooms.title": "Пространство для идеального отдыха",
+    "rooms.text": "Просторные дизайнерские номера с премиальной шумоизоляцией и ортопедическими матрасами. Здесь есть всё для глубокого сна после пляжа или продуктивной работы в тишине.",
+    "rooms.cta": "Выбрать номер",
+    "rooms.benefit1": "Шумоизоляция",
+    "rooms.benefit2": "Матрасы",
+    "rooms.benefit3": "Wi-Fi",
+    "rooms.benefit4": "Мини-бар",
+    "pool.subtitle": "★ Бассейн и Летняя зона",
+    "pool.title": "Освежающий<br>летний вайб",
+    "pool.text": "Огромный открытый бассейн (80 м²) с лаунж-зоной и удобными шезлонгами. Идеальное место, чтобы поймать ленивое курортное настроение, не покидая территорию отеля.",
+    "pool.benefit1": "80 м² бассейн",
+    "pool.benefit2": "Лаунж-бар",
+    "pool.benefit3": "Шезлонги",
+    "restaurant.subtitle": "★ Ресторан Redling",
+    "restaurant.title": "Гастрономическая<br>Одесса",
+    "restaurant.text": "Авторское прочтение черноморской и европейской кухни в стильном классическом интерьере. Лаундж-зона для неторопливых ужинов и раздельные залы для курящих и некурящих.",
+    "restaurant.cta": "Забронировать столик",
+    "restaurant.menu": "Меню ресторана",
+    "restaurant.weekdays": "Будни:",
+    "restaurant.weekends": "Выходные:",
+    "atmosphere.subtitle": "★ Об отеле",
+    "atmosphere.title": "Атмосфера, в которую<br>хочется возвращаться",
+    "atmosphere.text": "Redling — это сочетание искреннего одесского гостеприимства и европейского сервиса. Мы создали пространство, где вы чувствуете себя абсолютно свободно, окруженные заботой нашей команды 24/7.",
+    "contacts.subtitle": "★ Локация и Контакты",
+    "contacts.title": "Ждем вас<br>в Redling",
+    "contacts.fact1": "500 метров до моря — 7 минут пешком",
+    "contacts.fact2": "ул. Дача Ковалевского, 71, Одесса",
+    "contacts.fact3": "10 км до центра — тихий, зелёный район",
+    "contacts.reception": "Ресепшен",
+    "contacts.restaurant": "Ресторан",
+    "contacts.email": "Email",
+    "contacts.route": "Построить маршрут"
+  },
+  en: {
+    "nav.hero": "Home",
+    "nav.rooms": "Rooms",
+    "nav.pool": "Pool & Summer Zone",
+    "nav.restaurant": "Restaurant",
+    "nav.atmosphere": "Atmosphere",
+    "nav.contacts": "Contacts",
+    "nav.offers": "★ OFFERS ★",
+    "credits.text": "Website Design",
+    "hero.subtitle": "your cozy home by the sea in Odesa",
+    "hero.subhead": "Premium comfort for family holidays and business trips.",
+    "hero.text": "Only 500 meters to the beach, far from city noise.",
+    "hero.cta": "Book a room",
+    "hero.video": "Watch video",
+    "rooms.subtitle": "★ Designer rooms with premium comfort",
+    "rooms.title": "Space for perfect relaxation",
+    "rooms.text": "Spacious designer rooms with premium soundproofing and orthopedic mattresses. Everything you need for a deep sleep after the beach or productive work in silence.",
+    "rooms.cta": "Choose a room",
+    "rooms.benefit1": "Soundproofing",
+    "rooms.benefit2": "Mattresses",
+    "rooms.benefit3": "Wi-Fi",
+    "rooms.benefit4": "Minibar",
+    "pool.subtitle": "★ Pool & Summer Zone",
+    "pool.title": "Refreshing<br>summer vibe",
+    "pool.text": "Huge outdoor swimming pool (80 m²) with a lounge area and comfortable sunbeds. The perfect place to catch a lazy resort mood without leaving the hotel grounds.",
+    "pool.benefit1": "80 m² Pool",
+    "pool.benefit2": "Lounge Bar",
+    "pool.benefit3": "Sunbeds",
+    "restaurant.subtitle": "★ Redling Restaurant",
+    "restaurant.title": "Gastronomic<br>Odesa",
+    "restaurant.text": "Author's interpretation of Black Sea and European cuisine in a stylish classic interior. Lounge area for leisurely dinners and separate halls for smokers and non-smokers.",
+    "restaurant.cta": "Book a table",
+    "restaurant.menu": "Restaurant menu",
+    "restaurant.weekdays": "Weekdays:",
+    "restaurant.weekends": "Weekends:",
+    "atmosphere.subtitle": "★ About Hotel",
+    "atmosphere.title": "Atmosphere you<br>want to return to",
+    "atmosphere.text": "Redling is a combination of genuine Odesa hospitality and European service. We have created a space where you feel absolutely free, surrounded by the care of our team 24/7.",
+    "contacts.subtitle": "★ Location & Contacts",
+    "contacts.title": "Waiting for you<br>at Redling",
+    "contacts.fact1": "500 meters to the sea — 7 minutes walk",
+    "contacts.fact2": "71 Dacha Kovalevskoho St, Odesa",
+    "contacts.fact3": "10 km to the center — quiet, green area",
+    "contacts.reception": "Reception",
+    "contacts.restaurant": "Restaurant",
+    "contacts.email": "Email",
+    "contacts.route": "Get directions"
+  },
+  ua: {
+    "nav.hero": "Головна",
+    "nav.rooms": "Номери",
+    "nav.pool": "Басейн та Літня зона",
+    "nav.restaurant": "Ресторан",
+    "nav.atmosphere": "Атмосфера",
+    "nav.contacts": "Контакти",
+    "nav.offers": "★ АКЦІЇ ★",
+    "credits.text": "Створення сайту",
+    "hero.subtitle": "ваш затишний дім біля моря в Одесі",
+    "hero.subhead": "Преміальний комфорт для сімейного відпочинку та ділових поїздок.",
+    "hero.text": "Всього 500 метрів до пляжу, далеко від міського шуму.",
+    "hero.cta": "Забронювати номер",
+    "hero.video": "Дивитися відео",
+    "rooms.subtitle": "★ Дизайнерські номери з преміальним комфортом",
+    "rooms.title": "Простір для ідеального відпочинку",
+    "rooms.text": "Просторі дизайнерські номери з преміальною шумоізоляцією та ортопедичними матрацами. Тут є все для глибокого сну після пляжу або продуктивної роботи в тиші.",
+    "rooms.cta": "Обрати номер",
+    "rooms.benefit1": "Шумоізоляція",
+    "rooms.benefit2": "Матраци",
+    "rooms.benefit3": "Wi-Fi",
+    "rooms.benefit4": "Міні-бар",
+    "pool.subtitle": "★ Басейн та Літня зона",
+    "pool.title": "Освіжаючий<br>літній вайб",
+    "pool.text": "Величезний відкритий басейн (80 м²) з лаунж-зоною та зручними шезлонгами. Ідеальне місце, щоб зловити ледачий курортний настрій, не покидаючи територію готелю.",
+    "pool.benefit1": "80 м² басейн",
+    "pool.benefit2": "Лаунж-бар",
+    "pool.benefit3": "Шезлонги",
+    "restaurant.subtitle": "★ Ресторан Redling",
+    "restaurant.title": "Гастрономічна<br>Одеса",
+    "restaurant.text": "Авторське прочитання чорноморської та європейської кухні в стильному класичному інтер'єрі. Лаунж-зона для неспішних вечерь та окремі зали для курців та некурців.",
+    "restaurant.cta": "Забронювати столик",
+    "restaurant.menu": "Меню ресторану",
+    "restaurant.weekdays": "Будні:",
+    "restaurant.weekends": "Вихідні:",
+    "atmosphere.subtitle": "★ Про готель",
+    "atmosphere.title": "Атмосфера, в яку<br>хочеться повертатися",
+    "atmosphere.text": "Redling — це поєднання щирої одеської гостинності та європейського сервісу. Ми створили простір, де ви почуваєтеся абсолютно вільно, оточені турботою нашої команди 24/7.",
+    "contacts.subtitle": "★ Локація та Контакты",
+    "contacts.title": "Чекаємо на вас<br>в Redling",
+    "contacts.fact1": "500 метрів до моря — 7 хвилин пішки",
+    "contacts.fact2": "вул. Дача Ковалевського, 71, Одеса",
+    "contacts.fact3": "10 км до центру — тихий, зелений район",
+    "contacts.reception": "Ресепшн",
+    "contacts.restaurant": "Ресторан",
+    "contacts.email": "Email",
+    "contacts.route": "Побудувати маршрут"
+  }
+};
+
+function initTranslations() {
+  const langButtons = document.querySelectorAll('.lang-link');
+  
+  const setLanguage = (lang) => {
+    localStorage.setItem('redling-lang', lang);
+    
+    langButtons.forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+    });
+    
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (i18nData[lang] && i18nData[lang][key] !== undefined) {
+        el.innerHTML = i18nData[lang][key];
+      }
+    });
+    
+    document.documentElement.setAttribute('lang', lang);
+  };
+  
+  const savedLang = localStorage.getItem('redling-lang') || 'ru';
+  setLanguage(savedLang);
+  
+  langButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const lang = btn.getAttribute('data-lang');
+      setLanguage(lang);
+    });
+  });
+}
+
+// Start translations immediately
+initTranslations();

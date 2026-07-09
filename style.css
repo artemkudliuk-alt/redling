@@ -432,6 +432,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .lang-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
   color: var(--color-text-muted);
   text-decoration: none;
   font-size: 11px;
@@ -444,6 +449,7 @@ h1, h2, h3, h4, h5, h6 {
 .lang-link:hover,
 .lang-link.active {
   color: var(--color-primary);
+  outline: none;
 }
 
 /* Creator Credits */
