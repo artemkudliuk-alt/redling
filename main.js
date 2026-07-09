@@ -121,7 +121,35 @@ function updateActiveSection(index) {
   const sections = document.querySelectorAll('.content-section');
   sections.forEach((sec, idx) => {
     sec.classList.toggle('active', idx === index);
-    if (idx === index) sec.scrollTop = 0; // mobile sections scroll internally
+    if (idx === index) {
+      // Mobile sections scroll internally — always arrive at the top.
+      // Re-assert on the next frame: async work (iframe load, focus) can
+      // silently auto-scroll the section and hide the heading.
+      sec.scrollTop = 0;
+      requestAnimationFrame(() => { sec.scrollTop = 0; });
+    }
+  });
+  // Contacts map embed loads only once the screen is actually reached
+  if (index === SECTION_IDS.indexOf('contacts')) loadMapIframe();
+}
+
+// Deferred Google Maps embed: loading it up front lets it steal focus and
+// auto-scroll the contacts section, cutting off the title on mobile
+const mapIframe = document.querySelector('#contacts .map-wrapper iframe');
+
+function loadMapIframe() {
+  if (mapIframe && mapIframe.dataset.src) {
+    mapIframe.src = mapIframe.dataset.src;
+    mapIframe.removeAttribute('data-src');
+  }
+}
+
+// Transparent shield over the map: swipes scroll the page, a tap unlocks the map
+const mapTouchGuard = document.getElementById('mapTouchGuard');
+if (mapTouchGuard) {
+  mapTouchGuard.addEventListener('click', () => {
+    loadMapIframe();
+    mapTouchGuard.classList.add('hidden');
   });
 }
 
@@ -675,7 +703,8 @@ const i18nData = {
     "contacts.reception": "Ресепшен",
     "contacts.restaurant": "Ресторан",
     "contacts.email": "Email",
-    "contacts.route": "Построить маршрут"
+    "contacts.route": "Построить маршрут",
+    "contacts.map_hint": "Нажмите, чтобы управлять картой"
   },
   en: {
     "nav.hero": "Home",
@@ -724,7 +753,8 @@ const i18nData = {
     "contacts.reception": "Reception",
     "contacts.restaurant": "Restaurant",
     "contacts.email": "Email",
-    "contacts.route": "Get directions"
+    "contacts.route": "Get directions",
+    "contacts.map_hint": "Tap to interact with the map"
   },
   ua: {
     "nav.hero": "Головна",
@@ -773,7 +803,8 @@ const i18nData = {
     "contacts.reception": "Ресепшн",
     "contacts.restaurant": "Ресторан",
     "contacts.email": "Email",
-    "contacts.route": "Побудувати маршрут"
+    "contacts.route": "Побудувати маршрут",
+    "contacts.map_hint": "Натисніть, щоб керувати картою"
   }
 };
 

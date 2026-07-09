@@ -339,12 +339,17 @@
           
           <div class="contacts-map-col">
             <div class="map-wrapper">
+              <!-- src is set lazily from data-src in main.js: an eagerly loaded
+                   embed steals focus and auto-scrolls the section on mobile -->
               <iframe
-                src="https://maps.google.com/maps?q=ул.%20Дача%20Ковалевского,%2071,%20Одесса&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                data-src="https://maps.google.com/maps?q=ул.%20Дача%20Ковалевского,%2071,%20Одесса&t=&z=15&ie=UTF8&iwloc=&output=embed"
                 title="Карта: отель Redling, ул. Дача Ковалевского, 71, Одесса"
                 loading="lazy"
                 allowfullscreen>
               </iframe>
+              <button class="map-touch-guard" id="mapTouchGuard" type="button">
+                <span data-i18n="contacts.map_hint">Нажмите, чтобы управлять картой</span>
+              </button>
             </div>
           </div>
         </div>
