@@ -33,6 +33,79 @@ body {
   margin: 0;
 }
 
+/* Preloader Screen */
+.preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--color-primary);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.8s;
+  visibility: visible;
+  opacity: 1;
+}
+
+.preloader.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.preloader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.preloader-logo {
+  width: 180px;
+  height: auto;
+  filter: brightness(0) invert(1);
+  margin-bottom: 30px;
+  animation: logo-pulse 2.2s infinite ease-in-out;
+}
+
+.preloader-progress-container {
+  width: 240px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.preloader-progress-bar {
+  width: 0%;
+  height: 100%;
+  background: var(--color-white);
+  transition: width 0.1s cubic-bezier(0.1, 0.8, 0.2, 1);
+}
+
+.preloader-percent {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-white);
+  letter-spacing: 1px;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes logo-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.92;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+}
+
 /* Typography Custom Styling */
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;

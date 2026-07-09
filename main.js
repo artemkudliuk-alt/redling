@@ -428,11 +428,93 @@ if (closeVideoBtn && videoModal && youtubeIframe) {
 }
 
 // ============================
-// 13. Init
+// 13. Init with Preloader
 // ============================
 initVideoLayers();
 updateMenuHighlight(0);
 updateActiveSection(0);
-if (heroVideo) {
-  heroVideo.play().catch(() => {});
+
+// Preloader elements
+const preloader = document.getElementById('preloader');
+const preloaderBar = document.getElementById('preloaderProgressBar');
+const preloaderPercent = document.getElementById('preloaderPercent');
+
+if (preloader && preloaderBar && preloaderPercent) {
+  let preloaderVal = 0;
+  let isVideoReady = false;
+  let isPageLoaded = false;
+
+  // 1. Check if videoHero is ready
+  if (heroVideo) {
+    if (heroVideo.readyState >= 3) {
+      isVideoReady = true;
+    } else {
+      const markVideoReady = () => {
+        isVideoReady = true;
+        heroVideo.removeEventListener('canplay', markVideoReady);
+        heroVideo.removeEventListener('canplaythrough', markVideoReady);
+        heroVideo.removeEventListener('loadeddata', markVideoReady);
+      };
+      heroVideo.addEventListener('canplay', markVideoReady);
+      heroVideo.addEventListener('canplaythrough', markVideoReady);
+      heroVideo.addEventListener('loadeddata', markVideoReady);
+    }
+  } else {
+    isVideoReady = true;
+  }
+
+  // 2. Check if window is loaded
+  if (document.readyState === 'complete') {
+    isPageLoaded = true;
+  } else {
+    window.addEventListener('load', () => {
+      isPageLoaded = true;
+    });
+  }
+
+  // 3. Smooth progress animation
+  const progressInterval = setInterval(() => {
+    // Climb quickly to 85%
+    if (preloaderVal < 85) {
+      preloaderVal += Math.floor(Math.random() * 3) + 1; // Increment by 1-3
+      if (preloaderVal > 85) preloaderVal = 85;
+    } 
+    // Climb slowly to 95% if page is loaded but video is not ready yet
+    else if (preloaderVal < 95) {
+      if (isPageLoaded) {
+        preloaderVal += 0.5;
+      }
+    }
+
+    // Check if ready to finish
+    const canFinish = (isVideoReady && isPageLoaded && preloaderVal >= 85) || preloaderVal >= 99;
+
+    if (canFinish) {
+      preloaderVal = 100;
+      clearInterval(progressInterval);
+      
+      preloaderBar.style.width = '100%';
+      preloaderPercent.textContent = '100%';
+      
+      setTimeout(() => {
+        preloader.classList.add('fade-out');
+        
+        // Autoplay the video
+        if (heroVideo) {
+          heroVideo.play().catch(err => console.log("Autoplay blocked/failed:", err));
+        }
+      }, 400);
+      return;
+    }
+
+    // Update UI
+    const displayVal = Math.floor(preloaderVal);
+    preloaderBar.style.width = `${displayVal}%`;
+    preloaderPercent.textContent = `${displayVal}%`;
+  }, 25);
+} else {
+  // Fallback if elements don't exist
+  if (heroVideo) {
+    heroVideo.play().catch(() => {});
+  }
 }
