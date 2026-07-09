@@ -183,6 +183,61 @@ function prepareVideoToPlay(video, targetTime = 0) {
 }
 
 // ============================
+// 7b. Lazy video loading (data-src → src)
+// ============================
+// Only preloader.mp4 and hero.mp4 load eagerly; every transition video
+// sits with preload="none" + data-src until requested here.
+const videoLoadPromises = new Map();
+
+function ensureVideoLoaded(video) {
+  if (!video) return Promise.resolve();
+  if (videoLoadPromises.has(video)) return videoLoadPromises.get(video);
+
+  if (video.dataset.src && !video.getAttribute('src')) {
+    video.src = video.dataset.src;
+    video.removeAttribute('data-src');
+    video.preload = 'auto';
+    video.load();
+  }
+
+  if (video.readyState >= 3) {
+    const ready = Promise.resolve();
+    videoLoadPromises.set(video, ready);
+    return ready;
+  }
+
+  const promise = new Promise((resolve) => {
+    const finish = () => {
+      video.removeEventListener('canplaythrough', finish);
+      video.removeEventListener('error', finish);
+      clearTimeout(timer);
+      resolve();
+    };
+    // Safety: never block navigation forever on a slow network
+    const timer = setTimeout(finish, 8000);
+    video.addEventListener('canplaythrough', finish);
+    video.addEventListener('error', finish);
+  });
+  videoLoadPromises.set(video, promise);
+  return promise;
+}
+
+// Background queue: fetch transition videos one at a time (nearest screens
+// first) while the user is still watching the preloader / hero screen.
+let preloadQueueStarted = false;
+
+function startPreloadQueue() {
+  if (preloadQueueStarted) return;
+  preloadQueueStarted = true;
+  (async () => {
+    for (let i = 1; i < TOTAL_SCREENS; i++) {
+      await ensureVideoLoaded(transitions[i].forward);
+      await ensureVideoLoaded(transitions[i].reverse);
+    }
+  })();
+}
+
+// ============================
 // 8. Core navigation
 // ============================
 async function goToScreen(targetIndex) {
@@ -206,6 +261,9 @@ async function goToScreen(targetIndex) {
   if (goingForward) {
     // ——— FORWARD ———
     const video = transitions[targetIndex].forward;
+
+    // Make sure the lazy video is fetched before we try to play it
+    await ensureVideoLoaded(video);
 
     // Seek to start in the background (hidden)
     video.style.opacity = '0';
@@ -255,6 +313,9 @@ async function goToScreen(targetIndex) {
     // ——— BACKWARD ———
     const reverseVideo = transitions[oldIndex].reverse;
     const targetVideo = getRestingVideo(targetIndex);
+
+    // Make sure both lazy videos are fetched before we try to play them
+    await Promise.all([ensureVideoLoaded(reverseVideo), ensureVideoLoaded(targetVideo)]);
 
     // Seek reverse to start in the background (hidden)
     reverseVideo.style.opacity = '0';
@@ -513,6 +574,16 @@ if (preloader) {
     heroVideo.play().catch(() => {});
   }
 }
+
+// Kick off background loading of transition videos while the preloader /
+// hero screen is on: as soon as the hero video is ready — or after a
+// 3s safety delay so a stalled hero doesn't block the rest.
+if (heroVideo && heroVideo.readyState >= 3) {
+  startPreloadQueue();
+} else if (heroVideo) {
+  heroVideo.addEventListener('canplaythrough', startPreloadQueue, { once: true });
+}
+setTimeout(startPreloadQueue, 3000);
 
 // ============================================================
 // 14. Internationalization (i18n)

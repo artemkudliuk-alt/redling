@@ -23,6 +23,12 @@ html {
   overflow: hidden;
 }
 
+html,
+body {
+  /* Block iOS rubber-band bounce; custom JS slider owns all scrolling */
+  overscroll-behavior: none;
+}
+
 body {
   font-family: 'Montserrat', sans-serif;
   color: var(--color-white);
@@ -31,6 +37,7 @@ body {
   line-height: 1.5;
   height: 100%;
   margin: 0;
+  touch-action: none;
 }
 
 /* Preloader Screen */
@@ -40,6 +47,7 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   background-color: #000; /* Dark background before video loads */
   z-index: 99999;
   display: flex;
@@ -185,8 +193,9 @@ h1, h2, h3, h4, h5, h6 {
   top: 0;
   width: var(--sidebar-width);
   height: 100vh;
+  height: 100dvh;
   background-color: var(--color-white);
-  background-image: url("assets/img/side.jpg"); /* Textured overlay */
+  background-image: url("/assets/img/side.webp"); /* Textured overlay */
   background-size: cover;
   background-position: center;
   border-right: 1px solid var(--border-color);
@@ -463,6 +472,7 @@ h1, h2, h3, h4, h5, h6 {
   left: var(--sidebar-width);
   width: calc(100% - var(--sidebar-width));
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   z-index: 1;
 }
@@ -483,6 +493,14 @@ h1, h2, h3, h4, h5, h6 {
   opacity: 1;
 }
 
+/* Portrait phones: 16:9 video is heavily cropped by object-fit: cover —
+   keep the visual center of each frame in view (tune per-video here if needed) */
+@media (max-width: 768px) {
+  .bg-video {
+    object-position: 50% 50%;
+  }
+}
+
 .video-overlay {
   position: absolute;
   top: 0;
@@ -501,6 +519,7 @@ h1, h2, h3, h4, h5, h6 {
   left: 0;
   width: 100%;
   height: 100vh;
+  height: 100dvh;
   z-index: 10;
   pointer-events: none;
 }
@@ -511,6 +530,7 @@ h1, h2, h3, h4, h5, h6 {
   left: 0;
   width: 100%;
   height: 100vh;
+  height: 100dvh;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.4s ease;
@@ -537,6 +557,7 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 100%;
   width: 100%;
   height: 100vh;
+  height: 100dvh;
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 80px;
@@ -630,6 +651,7 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 100%;
   width: 100%;
   height: 100vh;
+  height: 100dvh;
   display: grid;
   grid-template-columns: 1.15fr 1fr;
   gap: 80px;
@@ -689,6 +711,7 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 100%;
   width: 100%;
   height: 100vh;
+  height: 100dvh;
   display: grid;
   grid-template-columns: 1.15fr 1.25fr;
   gap: 80px;
@@ -743,6 +766,7 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 760px;
   width: 100%;
   height: 100vh;
+  height: 100dvh;
   box-shadow: none;
   text-align: center;
   display: flex;
@@ -1138,6 +1162,7 @@ h1, h2, h3, h4, h5, h6 {
     width: 280px;
     top: 70px;
     height: calc(100vh - 70px);
+    height: calc(100dvh - 70px);
     box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
     padding: 30px 20px 20px;
   }
@@ -1162,6 +1187,7 @@ h1, h2, h3, h4, h5, h6 {
     align-items: flex-start;
     height: auto;
     min-height: 100vh;
+    min-height: 100dvh;
   }
 
   .section-card.glass {
@@ -1169,6 +1195,7 @@ h1, h2, h3, h4, h5, h6 {
     max-width: 100%;
     height: auto;
     min-height: 100vh;
+    min-height: 100dvh;
     border-right: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
@@ -1206,6 +1233,7 @@ h1, h2, h3, h4, h5, h6 {
     grid-template-columns: 1fr;
     height: auto;
     min-height: 100vh;
+    min-height: 100dvh;
     gap: 40px;
     padding: 100px 24px 40px;
   }
@@ -1224,6 +1252,7 @@ h1, h2, h3, h4, h5, h6 {
     grid-template-columns: 1fr;
     height: auto;
     min-height: 100vh;
+    min-height: 100dvh;
     gap: 40px;
     padding: 100px 24px 40px;
   }
@@ -1244,6 +1273,7 @@ h1, h2, h3, h4, h5, h6 {
     grid-template-columns: 1fr;
     height: auto;
     min-height: 100vh;
+    min-height: 100dvh;
     gap: 40px;
     padding: 100px 24px 40px;
   }
