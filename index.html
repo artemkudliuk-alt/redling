@@ -11,15 +11,71 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="icon" type="image/png" href="assets/img/logo.svg">
-  <script type="module" crossorigin src="./assets/index-CTOQGVT7.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-T9Talxd4.css">
+  <!-- Critical CSS: preloader must render before main stylesheet loads -->
+  <style>
+    .preloader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      background-color: #000;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.8s;
+      visibility: visible;
+      opacity: 1;
+      overflow: hidden;
+    }
+    .preloader-video-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      pointer-events: none;
+    }
+    .preloader.fade-out {
+      opacity: 0;
+      visibility: hidden;
+    }
+    .preloader-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    .preloader-logo {
+      width: 180px;
+      height: auto;
+      filter: brightness(0) invert(1);
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .preloader.show-logo .preloader-logo {
+      opacity: 1;
+      transform: scale(1);
+    }
+  </style>
+
+  <link rel="icon" type="image/svg+xml" href="assets/img/logo.svg">
+  <script type="module" crossorigin src="./assets/index-BvhlU4q6.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BxPYoHWK.css">
 </head>
 <body>
 
   <!-- Preloader Screen -->
   <div id="preloader" class="preloader">
-    <video class="preloader-video-bg" autoplay muted loop playsinline src="assets/video/preloader.mp4"></video>
+    <video class="preloader-video-bg" autoplay muted loop playsinline preload="auto" poster="assets/video/preloader_poster.webp" src="assets/video/preloader.mp4"></video>
     <div class="preloader-content">
       <img src="assets/img/logo.svg" alt="Redling Hotel Logo" class="preloader-logo">
     </div>
@@ -83,9 +139,9 @@
         </a>
       </div>
       <div class="sidebar-lang">
-        <button class="lang-link" data-lang="en">en</button>
-        <button class="lang-link active" data-lang="ru">ru</button>
-        <button class="lang-link" data-lang="ua">ua</button>
+        <button class="lang-link" data-lang="en" aria-label="Switch language to English">en</button>
+        <button class="lang-link active" data-lang="ru" aria-label="Переключить язык на русский">ru</button>
+        <button class="lang-link" data-lang="ua" aria-label="Перемкнути мову на українську">ua</button>
       </div>
       <div class="creator-credits"><span data-i18n="credits.text">Создание сайта</span> — Nextweb</div>
     </div>
@@ -94,28 +150,29 @@
   <!-- Right Main Area -->
   <main class="main-content">
     <div class="video-background-container">
-      <!-- Screen 0: Hero (loop) -->
-      <video id="videoHero" class="bg-video active" muted playsinline loop autoplay preload="auto" poster="assets/video/hero_poster.jpg" src="assets/video/hero.mp4"></video>
+      <!-- Screen 0: Hero (loop) — eager, needed immediately after preloader -->
+      <video id="videoHero" class="bg-video active" muted playsinline loop autoplay preload="auto" poster="assets/video/hero_poster.webp" src="assets/video/hero.mp4"></video>
 
+      <!-- All transition videos load lazily via data-src (see main.js) -->
       <!-- Screen 1: Rooms — forward & reverse -->
-      <video id="videoRooms" class="bg-video" muted playsinline preload="auto" src="assets/video/rooms.mp4"></video>
-      <video id="videoRoomsRev" class="bg-video" muted playsinline preload="auto" src="assets/video/rooms_reverse.mp4"></video>
+      <video id="videoRooms" class="bg-video" muted playsinline preload="none" data-src="assets/video/rooms.mp4"></video>
+      <video id="videoRoomsRev" class="bg-video" muted playsinline preload="none" data-src="assets/video/rooms_reverse.mp4"></video>
 
       <!-- Screen 2: Pool — forward & reverse -->
-      <video id="videoPool" class="bg-video" muted playsinline preload="auto" src="assets/video/pool.mp4"></video>
-      <video id="videoPoolRev" class="bg-video" muted playsinline preload="auto" src="assets/video/pool_reverse.mp4"></video>
+      <video id="videoPool" class="bg-video" muted playsinline preload="none" data-src="assets/video/pool.mp4"></video>
+      <video id="videoPoolRev" class="bg-video" muted playsinline preload="none" data-src="assets/video/pool_reverse.mp4"></video>
 
       <!-- Screen 3: Restaurant — forward & reverse -->
-      <video id="videoRestaurant" class="bg-video" muted playsinline preload="auto" src="assets/video/restaurant.mp4"></video>
-      <video id="videoRestaurantRev" class="bg-video" muted playsinline preload="auto" src="assets/video/restaurant_reverse.mp4"></video>
+      <video id="videoRestaurant" class="bg-video" muted playsinline preload="none" data-src="assets/video/restaurant.mp4"></video>
+      <video id="videoRestaurantRev" class="bg-video" muted playsinline preload="none" data-src="assets/video/restaurant_reverse.mp4"></video>
 
       <!-- Screen 4: Atmosphere — forward & reverse -->
-      <video id="videoAtmosphere" class="bg-video" muted playsinline preload="auto" src="assets/video/atmosphere.mp4"></video>
-      <video id="videoAtmosphereRev" class="bg-video" muted playsinline preload="auto" src="assets/video/atmosphere_reverse.mp4"></video>
+      <video id="videoAtmosphere" class="bg-video" muted playsinline preload="none" data-src="assets/video/atmosphere.mp4"></video>
+      <video id="videoAtmosphereRev" class="bg-video" muted playsinline preload="none" data-src="assets/video/atmosphere_reverse.mp4"></video>
 
       <!-- Screen 5: Contacts — forward & reverse -->
-      <video id="videoContacts" class="bg-video" muted playsinline preload="auto" src="assets/video/contacts.mp4"></video>
-      <video id="videoContactsRev" class="bg-video" muted playsinline preload="auto" src="assets/video/contacts_reverse.mp4"></video>
+      <video id="videoContacts" class="bg-video" muted playsinline preload="none" data-src="assets/video/contacts.mp4"></video>
+      <video id="videoContactsRev" class="bg-video" muted playsinline preload="none" data-src="assets/video/contacts_reverse.mp4"></video>
       
       <div class="video-overlay"></div>
     </div>
@@ -283,9 +340,10 @@
           
           <div class="contacts-map-col">
             <div class="map-wrapper">
-              <iframe 
-                src="https://maps.google.com/maps?q=ул.%20Дача%20Ковалевского,%2071,%20Одесса&t=&z=15&ie=UTF8&iwloc=&output=embed" 
-                loading="lazy" 
+              <iframe
+                src="https://maps.google.com/maps?q=ул.%20Дача%20Ковалевского,%2071,%20Одесса&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                title="Карта: отель Redling, ул. Дача Ковалевского, 71, Одесса"
+                loading="lazy"
                 allowfullscreen>
               </iframe>
             </div>
@@ -297,31 +355,31 @@
   </main>
 
   <!-- Fullscreen Video Lightbox Modal -->
-  <div id="videoModal" class="video-modal">
+  <div id="videoModal" class="video-modal" role="dialog" aria-modal="true" aria-label="Видео об отеле">
     <div class="video-modal-content">
       <button id="closeVideoBtn" class="close-video-btn" aria-label="Закрыть плеер">&times;</button>
       <div class="iframe-container">
-        <iframe id="youtubeIframe" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        <iframe id="youtubeIframe" src="" title="Видео об отеле Redling" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
       </div>
     </div>
   </div>
 
   <!-- Fullscreen Photo Gallery Modal -->
-  <div id="galleryModal" class="gallery-modal">
+  <div id="galleryModal" class="gallery-modal" role="dialog" aria-modal="true" aria-label="Фотогалерея отеля">
     <button id="closeGalleryBtn" class="close-gallery-btn" aria-label="Закрыть галерею">&times;</button>
-    
+
     <div class="gallery-slider-container">
       <div class="gallery-wrapper" id="galleryWrapper">
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo1.jpg" alt="Atmosphere 1" loading="lazy"></div>
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo2.jpg" alt="Atmosphere 2" loading="lazy"></div>
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo3.jpg" alt="Atmosphere 3" loading="lazy"></div>
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo4.jpg" alt="Atmosphere 4" loading="lazy"></div>
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo5.jpg" alt="Atmosphere 5" loading="lazy"></div>
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo6.jpg" alt="Atmosphere 6" loading="lazy"></div>
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo7.jpg" alt="Atmosphere 7" loading="lazy"></div>
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo8.jpg" alt="Atmosphere 8" loading="lazy"></div>
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo9.jpg" alt="Atmosphere 9" loading="lazy"></div>
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo10.jpg" alt="Atmosphere 10" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo1.webp" alt="Атмосфера отеля Redling — фото 1" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo2.webp" alt="Атмосфера отеля Redling — фото 2" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo3.webp" alt="Атмосфера отеля Redling — фото 3" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo4.webp" alt="Атмосфера отеля Redling — фото 4" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo5.webp" alt="Атмосфера отеля Redling — фото 5" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo6.webp" alt="Атмосфера отеля Redling — фото 6" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo7.webp" alt="Атмосфера отеля Redling — фото 7" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo8.webp" alt="Атмосфера отеля Redling — фото 8" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo9.webp" alt="Атмосфера отеля Redling — фото 9" loading="lazy"></div>
+        <div class="gallery-slide"><img src="assets/img/atmosphere/photo10.webp" alt="Атмосфера отеля Redling — фото 10" loading="lazy"></div>
       </div>
       
       <!-- Nav Arrows -->
