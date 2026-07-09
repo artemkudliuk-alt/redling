@@ -436,21 +436,32 @@ updateActiveSection(0);
 
 // Preloader elements
 const preloader = document.getElementById('preloader');
-const preloaderBar = document.getElementById('preloaderProgressBar');
-const preloaderPercent = document.getElementById('preloaderPercent');
 
-if (preloader && preloaderBar && preloaderPercent) {
-  let preloaderVal = 0;
+if (preloader) {
   let isVideoReady = false;
   let isPageLoaded = false;
+  let isMinTimeElapsed = false;
 
-  // 1. Check if videoHero is ready
+  // 1. Show the logo after exactly 1 second (1000ms)
+  setTimeout(() => {
+    preloader.classList.add('show-logo');
+  }, 1000);
+
+  // 2. Set minimal display time (2.5 seconds) to showcase the video and logo fade-in
+  setTimeout(() => {
+    isMinTimeElapsed = true;
+    checkAndHidePreloader();
+  }, 2500);
+
+  // 3. Monitor hero video ready status
   if (heroVideo) {
     if (heroVideo.readyState >= 3) {
       isVideoReady = true;
+      checkAndHidePreloader();
     } else {
       const markVideoReady = () => {
         isVideoReady = true;
+        checkAndHidePreloader();
         heroVideo.removeEventListener('canplay', markVideoReady);
         heroVideo.removeEventListener('canplaythrough', markVideoReady);
         heroVideo.removeEventListener('loadeddata', markVideoReady);
@@ -463,55 +474,39 @@ if (preloader && preloaderBar && preloaderPercent) {
     isVideoReady = true;
   }
 
-  // 2. Check if window is loaded
+  // 4. Monitor page load status
   if (document.readyState === 'complete') {
     isPageLoaded = true;
+    checkAndHidePreloader();
   } else {
     window.addEventListener('load', () => {
       isPageLoaded = true;
+      checkAndHidePreloader();
     });
   }
 
-  // 3. Smooth progress animation
-  const progressInterval = setInterval(() => {
-    // Climb quickly to 85%
-    if (preloaderVal < 85) {
-      preloaderVal += Math.floor(Math.random() * 3) + 1; // Increment by 1-3
-      if (preloaderVal > 85) preloaderVal = 85;
-    } 
-    // Climb slowly to 95% if page is loaded but video is not ready yet
-    else if (preloaderVal < 95) {
-      if (isPageLoaded) {
-        preloaderVal += 0.5;
+  function checkAndHidePreloader() {
+    if (isVideoReady && isPageLoaded && isMinTimeElapsed) {
+      hidePreloader();
+    }
+  }
+
+  // Safety fallback timeout (7 seconds)
+  const safetyTimeout = setTimeout(() => {
+    hidePreloader();
+  }, 7000);
+
+  function hidePreloader() {
+    if (!preloader.classList.contains('fade-out')) {
+      clearTimeout(safetyTimeout);
+      preloader.classList.add('fade-out');
+      
+      // Auto-play the main hero video
+      if (heroVideo) {
+        heroVideo.play().catch(err => console.log("Hero autoplay blocked/failed:", err));
       }
     }
-
-    // Check if ready to finish
-    const canFinish = (isVideoReady && isPageLoaded && preloaderVal >= 85) || preloaderVal >= 99;
-
-    if (canFinish) {
-      preloaderVal = 100;
-      clearInterval(progressInterval);
-      
-      preloaderBar.style.width = '100%';
-      preloaderPercent.textContent = '100%';
-      
-      setTimeout(() => {
-        preloader.classList.add('fade-out');
-        
-        // Autoplay the video
-        if (heroVideo) {
-          heroVideo.play().catch(err => console.log("Autoplay blocked/failed:", err));
-        }
-      }, 400);
-      return;
-    }
-
-    // Update UI
-    const displayVal = Math.floor(preloaderVal);
-    preloaderBar.style.width = `${displayVal}%`;
-    preloaderPercent.textContent = `${displayVal}%`;
-  }, 25);
+  }
 } else {
   // Fallback if elements don't exist
   if (heroVideo) {
