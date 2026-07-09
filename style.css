@@ -201,7 +201,7 @@ h1, h2, h3, h4, h5, h6 {
   width: var(--sidebar-width);
   height: 100vh;
   background-color: var(--color-white);
-  background-image: url("/assets/img/side.jpg"); /* Textured overlay */
+  background-image: url("assets/img/side.jpg"); /* Textured overlay */
   background-size: cover;
   background-position: center;
   border-right: 1px solid var(--border-color);
