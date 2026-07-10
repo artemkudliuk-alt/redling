@@ -65,6 +65,24 @@
       opacity: 1;
       transform: scale(1);
     }
+    .preloader-percentage-container {
+      margin-top: 24px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition-delay: 0.3s;
+    }
+    .preloader.show-logo .preloader-percentage-container {
+      opacity: 0.85;
+      transform: translateY(0);
+    }
+    .preloader-percentage {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: #fff;
+      letter-spacing: 2px;
+    }
   </style>
 
   <link rel="stylesheet" href="./style.css">
@@ -77,6 +95,9 @@
     <video id="preloaderVideo" class="preloader-video-bg" autoplay muted playsinline preload="auto" poster="assets/video/preloader_poster.webp" src="assets/video/preloader.mp4"></video>
     <div class="preloader-content">
       <img src="assets/img/logo.svg" alt="Redling Hotel Logo" class="preloader-logo">
+      <div class="preloader-percentage-container">
+        <span id="preloaderPercentage" class="preloader-percentage">0%</span>
+      </div>
     </div>
   </div>
 

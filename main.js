@@ -267,12 +267,14 @@ let preloadQueueStarted = false;
 function startPreloadQueue() {
   if (preloadQueueStarted) return;
   preloadQueueStarted = true;
-  (async () => {
-    for (let i = 1; i < TOTAL_SCREENS; i++) {
-      await ensureVideoLoaded(transitions[i].forward);
-      await ensureVideoLoaded(transitions[i].reverse);
+  
+  // Eagerly preload all transition videos in parallel to maximize buffering during the 7s preloader
+  for (let i = 1; i < TOTAL_SCREENS; i++) {
+    if (transitions[i]) {
+      ensureVideoLoaded(transitions[i].forward);
+      ensureVideoLoaded(transitions[i].reverse);
     }
-  })();
+  }
 }
 
 // ============================
@@ -570,16 +572,47 @@ if (preloader) {
   let isPageLoaded = false;
   let isPreloaderVideoEnded = false;
 
-  // Monitor preloader video playback and ensure it plays fully to the end
   const preloaderVideo = document.getElementById('preloaderVideo');
+  const percentageText = document.getElementById('preloaderPercentage');
+
+  // Helper to check if critical videos (hero + rooms) are ready
+  function areCriticalVideosReady() {
+    const heroReady = heroVideo ? heroVideo.readyState >= 3 : true;
+    const roomsVideo = transitions[1]?.forward;
+    const roomsReady = roomsVideo ? roomsVideo.readyState >= 3 : true;
+    return heroReady && roomsReady;
+  }
+
+  // Update percentage text dynamically based on preloader video time
+  const updatePercentage = () => {
+    if (!preloaderVideo || !preloaderVideo.duration) return;
+    const current = preloaderVideo.currentTime;
+    const duration = preloaderVideo.duration || 7.0;
+    
+    let percentVal = 0;
+    if (isPreloaderVideoEnded) {
+      percentVal = 100;
+    } else {
+      // Map progress smoothly up to 97-98%
+      percentVal = Math.min(97, Math.floor((current / duration) * 98));
+    }
+    
+    if (percentageText) {
+      percentageText.textContent = `${percentVal}%`;
+    }
+  };
+
+  // Monitor preloader video playback and ensure it plays fully to the end
   if (preloaderVideo) {
-    preloaderVideo.playbackRate = 1.0; // Start at normal speed
+    preloaderVideo.playbackRate = 1.0; // Play at normal speed (7s duration)
     
     preloaderVideo.addEventListener('timeupdate', () => {
-      // If the video is nearing the end (1.85s out of 2.14s) and page is still loading, slow it down to a crawl
-      if (preloaderVideo.currentTime >= 1.85) {
-        if (!isVideoReady || !isPageLoaded) {
-          preloaderVideo.playbackRate = 0.15; // Slow down to 15% speed to wait for load
+      updatePercentage();
+      
+      // If the video is nearing the end (6.7s out of 7.0s) and critical videos/page are still loading, slow it down to a crawl
+      if (preloaderVideo.currentTime >= 6.7) {
+        if (!areCriticalVideosReady() || !isPageLoaded) {
+          preloaderVideo.playbackRate = 0.15; // Slow down to 15% speed (crawls and stays at 97%)
         } else {
           preloaderVideo.playbackRate = 1.0; // Play at normal speed
         }
@@ -588,20 +621,22 @@ if (preloader) {
 
     preloaderVideo.addEventListener('ended', () => {
       isPreloaderVideoEnded = true;
+      if (percentageText) {
+        percentageText.textContent = '100%';
+      }
       checkAndHidePreloader();
     });
   } else {
     isPreloaderVideoEnded = true;
   }
 
-  // 1. Show the logo after exactly 1 second (1000ms)
+  // 1. Show the logo and start percentage display after exactly 1 second (1000ms)
   setTimeout(() => {
     preloader.classList.add('show-logo');
   }, 1000);
 
-  // 2. Monitor hero video ready status (skip waiting on mobile devices to prevent browser autoplay throttling delays)
-  const isMobile = window.innerWidth <= 991;
-  if (heroVideo && !isMobile) {
+  // 2. Monitor hero video ready status
+  if (heroVideo) {
     if (heroVideo.readyState >= 3) {
       isVideoReady = true;
       checkAndHidePreloader();
@@ -633,18 +668,18 @@ if (preloader) {
   }
 
   function checkAndHidePreloader() {
-    if (isPreloaderVideoEnded && isVideoReady && isPageLoaded) {
+    if (isPreloaderVideoEnded && isVideoReady && isPageLoaded && areCriticalVideosReady()) {
       hidePreloader();
     }
   }
 
-  // Safety fallback timeout (6 seconds)
+  // Safety fallback timeout (12 seconds)
   const safetyTimeout = setTimeout(() => {
     isPreloaderVideoEnded = true;
     isVideoReady = true;
     isPageLoaded = true;
     hidePreloader();
-  }, 6000);
+  }, 12000);
 
   function hidePreloader() {
     if (!preloader.classList.contains('fade-out')) {
@@ -664,15 +699,8 @@ if (preloader) {
   }
 }
 
-// Kick off background loading of transition videos while the preloader /
-// hero screen is on: as soon as the hero video is ready — or after a
-// 3s safety delay so a stalled hero doesn't block the rest.
-if (heroVideo && heroVideo.readyState >= 3) {
-  startPreloadQueue();
-} else if (heroVideo) {
-  heroVideo.addEventListener('canplaythrough', startPreloadQueue, { once: true });
-}
-setTimeout(startPreloadQueue, 3000);
+// Kick off background loading of transition videos immediately in parallel
+startPreloadQueue();
 
 // ============================================================
 // 14. Internationalization (i18n)
