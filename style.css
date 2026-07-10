@@ -1132,6 +1132,81 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* ── Large Desktop & Ultra-wide Screens (QHD, 4K, 5K) ── */
+@media (min-width: 1600px) {
+  #rooms .rooms-split-container,
+  #restaurant .restaurant-split-container,
+  #contacts .contacts-split-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+  #atmosphere .section-card.glass {
+    max-width: 800px;
+    margin-right: 5%;
+  }
+}
+
+/* ── Mid-size Laptops & Landscape Tablets (992px to 1300px) ── */
+@media (min-width: 992px) and (max-width: 1300px) {
+  :root {
+    --sidebar-width: 245px;
+  }
+  .page-side {
+    padding: 30px 16px 20px;
+  }
+  .logo-img {
+    width: 110px;
+  }
+  .menu li a {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+  }
+  .social-links a {
+    font-size: 14px;
+  }
+  
+  #rooms .rooms-split-container,
+  #restaurant .restaurant-split-container,
+  #contacts .contacts-split-container {
+    padding: 0 5%;
+    gap: 40px;
+  }
+  #atmosphere .section-card.glass {
+    padding-right: 40px;
+  }
+}
+
+/* ── Short Viewports (Laptops & Notebooks with height <= 800px) ── */
+@media (max-height: 800px) and (min-width: 992px) {
+  #rooms .rooms-split-container,
+  #restaurant .restaurant-split-container,
+  #contacts .contacts-split-container {
+    align-items: center;
+  }
+  
+  #rooms .rooms-text-col {
+    height: auto !important;
+    gap: 20px;
+  }
+  
+  #restaurant .restaurant-text-col {
+    align-self: center !important;
+    padding-top: 0 !important;
+  }
+  #restaurant .restaurant-actions-col {
+    align-self: center !important;
+    padding-bottom: 0 !important;
+  }
+  
+  #contacts .contacts-info-col {
+    justify-content: center;
+  }
+  #contacts .map-wrapper {
+    height: 38vh;
+  }
+}
+
 /* Responsive Styling */
 @media (max-width: 991px) {
   .mobile-header {

@@ -633,25 +633,42 @@ if (preloader && introScreen && introVideo) {
 
   const bufferedPercent = () => {
     const b = introVideo.buffered;
-    if (!introVideo.duration || !b.length) return 0;
+    if (!introVideo.duration || isNaN(introVideo.duration) || !isFinite(introVideo.duration) || !b.length) return 0;
     return (b.end(b.length - 1) / introVideo.duration) * 100;
   };
 
   let lastTick = Date.now();
 
   const tick = setInterval(() => {
-    // Time-based step (40%/s): background tabs throttle timers to ~1/s
-    const now = Date.now();
-    const step = (now - lastTick) * 0.04;
-    lastTick = now;
+    try {
+      // Time-based step (40%/s): background tabs throttle timers to ~1/s
+      const now = Date.now();
+      const step = (now - lastTick) * 0.04;
+      lastTick = now;
 
-    // ponytail: 12s escape hatch so a dead network never traps the user here
-    const ready = introVideo.readyState >= 4 || now - startedAt > 12000;
-    // Percent follows real buffering, parks at 99% until canplaythrough
-    const target = ready ? 100 : Math.min(99, bufferedPercent());
-    percent = Math.min(percent + step, Math.max(percent, target));
-    percentEl.textContent = `${Math.floor(percent)}%`;
-    if (percent >= 100) {
+      // ponytail: 12s escape hatch so a dead network never traps the user here
+      const ready = introVideo.readyState >= 4 || now - startedAt > 12000;
+      
+      let target = 0;
+      if (ready) {
+        target = 100;
+      } else {
+        const buffered = bufferedPercent();
+        target = isNaN(buffered) ? 0 : Math.min(99, buffered);
+      }
+      
+      percent = Math.min(percent + step, Math.max(percent, target));
+      if (isNaN(percent)) {
+        percent = 0;
+      }
+      
+      percentEl.textContent = `${Math.floor(percent)}%`;
+      if (percent >= 100) {
+        clearInterval(tick);
+        startIntro();
+      }
+    } catch (err) {
+      console.error("Preloader tick bypassed due to error:", err);
       clearInterval(tick);
       startIntro();
     }
