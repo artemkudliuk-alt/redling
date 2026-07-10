@@ -891,6 +891,8 @@ function initPhotoGallery() {
     wrapper.style.transform = `translateX(${currentTranslate}px)`;
   };
   
+  const counterEl = document.getElementById('galleryCounter');
+  
   const setPositionByIndex = () => {
     const slideWidth = wrapper.offsetWidth;
     currentTranslate = -currentIdx * slideWidth;
@@ -902,6 +904,11 @@ function initPhotoGallery() {
     dots.forEach((dot, index) => {
       dot.classList.toggle('active', index === currentIdx);
     });
+    
+    // Update counter
+    if (counterEl) {
+      counterEl.textContent = `${currentIdx + 1} / ${totalSlides}`;
+    }
   };
   
   const nextSlide = () => {
