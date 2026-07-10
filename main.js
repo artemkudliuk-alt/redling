@@ -581,8 +581,9 @@ if (preloader) {
     checkAndHidePreloader();
   }, 2500);
 
-  // 3. Monitor hero video ready status
-  if (heroVideo) {
+  // 3. Monitor hero video ready status (skip waiting on mobile devices to prevent browser autoplay throttling delays)
+  const isMobile = window.innerWidth <= 991;
+  if (heroVideo && !isMobile) {
     if (heroVideo.readyState >= 3) {
       isVideoReady = true;
       checkAndHidePreloader();
@@ -619,10 +620,10 @@ if (preloader) {
     }
   }
 
-  // Safety fallback timeout (7 seconds)
+  // Safety fallback timeout (5 seconds)
   const safetyTimeout = setTimeout(() => {
     hidePreloader();
-  }, 7000);
+  }, 5000);
 
   function hidePreloader() {
     if (!preloader.classList.contains('fade-out')) {
