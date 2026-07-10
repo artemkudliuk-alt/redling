@@ -582,41 +582,14 @@ if (preloader) {
     preloaderVideo.play().catch(err => console.log("Preloader video play failed/blocked:", err));
   }
 
-  // Helper to check if all videos on the site (hero + all transitions) are ready to play (readyState >= 2)
-  function areAllVideosReady() {
-    if (heroVideo && heroVideo.readyState < 3) return false;
-    
-    const isMobile = window.innerWidth <= 991;
-    // On mobile, we only block on hero + first transition (rooms) to avoid browser connection throttling hangs.
-    // On desktop, we verify all transition videos are ready.
-    const screensToCheck = isMobile ? 2 : TOTAL_SCREENS;
-    
-    for (let i = 1; i < screensToCheck; i++) {
-      const t = transitions[i];
-      if (t) {
-        // readyState >= 2 (HAVE_CURRENT_DATA) ensures the video metadata is loaded and it is ready to play immediately
-        if (t.forward && t.forward.readyState < 2) return false;
-        if (t.reverse && t.reverse.readyState < 2) return false;
-      }
-    }
-    return true;
-  }
-
-  // Smooth clock-driven ticks from 0% to 100% over 7 seconds (70ms per 1%)
+  // Ticks up from 0% to 100% over exactly 7 seconds (70ms * 100 steps)
   const progressInterval = setInterval(() => {
-    // If we reach 97% but the page or all transition videos are not ready yet, hold at 97%
-    if (currentPercent >= 97 && (!isPageLoaded || !areAllVideosReady())) {
-      // Slow tick: add tiny decimals if they are still loading to show activity
-      if (currentPercent < 99) {
-        currentPercent += 0.1;
-        if (percentageText) {
-          percentageText.textContent = `${Math.floor(currentPercent)}%`;
-        }
-      }
+    // If we reach 98% but the page itself hasn't finished loading yet, hold it at 98%
+    if (currentPercent >= 98 && !isPageLoaded) {
       return;
     }
     
-    currentPercent = Math.min(100, Math.floor(currentPercent) + 1);
+    currentPercent += 1;
     if (percentageText) {
       percentageText.textContent = `${currentPercent}%`;
     }
@@ -628,7 +601,7 @@ if (preloader) {
     }
   }, 70);
 
-  // 2. Monitor page load status
+  // 2. Monitor page load status (we wait for DOM loading, but do NOT block on other videos buffering)
   if (document.readyState === 'complete') {
     isPageLoaded = true;
     checkAndHidePreloader();
@@ -640,7 +613,7 @@ if (preloader) {
   }
 
   function checkAndHidePreloader() {
-    if (isProgressFinished && isPageLoaded && areAllVideosReady()) {
+    if (isProgressFinished && isPageLoaded) {
       hidePreloader();
     }
   }
