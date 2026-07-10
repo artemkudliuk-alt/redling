@@ -570,6 +570,21 @@ if (preloader) {
   let isPageLoaded = false;
   let isMinTimeElapsed = false;
 
+  // Slow down the preloader video to prevent it from looping/restarting and stretch it beautifully
+  const preloaderVideo = document.getElementById('preloaderVideo');
+  if (preloaderVideo) {
+    preloaderVideo.playbackRate = 0.75; // 75% speed from start (fits 2.5s time smoothly)
+    
+    preloaderVideo.addEventListener('timeupdate', () => {
+      // If the video is nearing the end (1.8s out of 2.14s) and page/video are still loading, slow it down to a crawl
+      if (preloaderVideo.currentTime >= 1.8) {
+        if (!isVideoReady || !isPageLoaded || !isMinTimeElapsed) {
+          preloaderVideo.playbackRate = 0.2; // 20% speed
+        }
+      }
+    });
+  }
+
   // 1. Show the logo after exactly 1 second (1000ms)
   setTimeout(() => {
     preloader.classList.add('show-logo');
