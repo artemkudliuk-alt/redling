@@ -239,12 +239,29 @@ const supportsWebm = (() => {
   }
 })();
 
+// Detect mobile device category
+const isMobile = (() => {
+  try {
+    return window.innerWidth <= 768 || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+  } catch (e) {
+    return false;
+  }
+})();
+
+// Video folder path based on device category
+const videoFolder = isMobile ? 'assets/video/mobile/' : 'assets/video/';
+
 function ensureVideoLoaded(video) {
   if (!video) return Promise.resolve();
   if (videoLoadPromises.has(video)) return videoLoadPromises.get(video);
 
   if (video.dataset.src && !video.getAttribute('src')) {
     let src = video.dataset.src;
+    // Replace default video path with mobile folder if mobile
+    if (isMobile) {
+      src = src.replace('assets/video/', 'assets/video/mobile/');
+    }
+    // Swap extension to webm if supported
     if (supportsWebm) {
       src = src.replace('.mp4', '.webm');
     }
@@ -605,12 +622,11 @@ if (preloader && introScreen && introVideo) {
   const startedAt = Date.now();
   let percent = 0;
 
-  // Swap to lightweight WebM format if supported by the browser
-  if (supportsWebm) {
-    introVideo.src = 'assets/video/intro.webm';
-    if (heroVideo) {
-      heroVideo.src = 'assets/video/hero.webm';
-    }
+  // Set correct sources dynamically (combining mobile/desktop and webm/mp4 formats)
+  const ext = supportsWebm ? '.webm' : '.mp4';
+  introVideo.src = `${videoFolder}intro${ext}`;
+  if (heroVideo) {
+    heroVideo.src = `${videoFolder}hero${ext}`;
   }
 
   introVideo.load();
@@ -643,7 +659,9 @@ if (preloader && introScreen && introVideo) {
 
   function startIntro() {
     // Intro is fully buffered: now fetch hero + transition videos behind it
-    heroVideo.load();
+    if (heroVideo) {
+      heroVideo.load();
+    }
     startPreloadQueue();
 
     introVideo.onended = endIntro;
@@ -655,14 +673,15 @@ if (preloader && introScreen && introVideo) {
   }
 
   function endIntro() {
-    heroVideo.play().catch(() => {});
+    if (heroVideo) {
+      heroVideo.play().catch(() => {});
+    }
     preloader.classList.add('fade-out'); // logo fades out first...
     setTimeout(() => introScreen.classList.add('fade-out'), 400); // ...then the site is revealed
   }
 } else if (heroVideo) {
-  if (supportsWebm) {
-    heroVideo.src = 'assets/video/hero.webm';
-  }
+  const ext = supportsWebm ? '.webm' : '.mp4';
+  heroVideo.src = `${videoFolder}hero${ext}`;
   heroVideo.load();
   startPreloadQueue();
   heroVideo.play().catch(() => {});
