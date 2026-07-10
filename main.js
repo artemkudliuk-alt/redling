@@ -575,12 +575,20 @@ if (preloader) {
   const preloaderVideo = document.getElementById('preloaderVideo');
   const percentageText = document.getElementById('preloaderPercentage');
 
-  // Helper to check if critical videos (hero + rooms) are ready
+  // Helper to check if all videos on the site (hero + all transitions) are ready to play
   function areCriticalVideosReady() {
-    const heroReady = heroVideo ? heroVideo.readyState >= 3 : true;
-    const roomsVideo = transitions[1]?.forward;
-    const roomsReady = roomsVideo ? roomsVideo.readyState >= 3 : true;
-    return heroReady && roomsReady;
+    if (heroVideo && heroVideo.readyState < 3) return false;
+    
+    // Check all transition videos (forward and reverse)
+    for (let i = 1; i < TOTAL_SCREENS; i++) {
+      const t = transitions[i];
+      if (t) {
+        // readyState >= 2 (HAVE_CURRENT_DATA) ensures the video metadata is loaded and it is ready to play immediately
+        if (t.forward && t.forward.readyState < 2) return false;
+        if (t.reverse && t.reverse.readyState < 2) return false;
+      }
+    }
+    return true;
   }
 
   // Update percentage text dynamically based on preloader video time
