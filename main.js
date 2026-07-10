@@ -723,20 +723,40 @@ if (preloader && introScreen && introVideo) {
     }
     startPreloadQueue();
 
-    introVideo.onended = endIntro;
+    let transitioned = false;
+    const transitionLeadTime = 0.6; // Start fading 0.6s before the video ends (matches 0.5s CSS transition + 0.1s play latency)
+
+    const triggerTransition = () => {
+      if (transitioned) return;
+      transitioned = true;
+
+      introVideo.ontimeupdate = null;
+      introVideo.onended = null;
+
+      // Start playing the hero video loop underneath immediately
+      if (heroVideo) {
+        heroVideo.play().catch(() => {});
+      }
+
+      // Smoothly fade out both the gold preloader logo and the intro video layer
+      preloader.classList.add('fade-out');
+      introScreen.classList.add('fade-out');
+    };
+
+    // Monitor playback progress to fade out early, preventing frozen end-frame cuts
+    introVideo.ontimeupdate = () => {
+      if (introVideo.currentTime >= introVideo.duration - transitionLeadTime) {
+        triggerTransition();
+      }
+    };
+
+    introVideo.onended = triggerTransition;
+
     introVideo.play()
       // Video is already rendering under the gold screen: the gold and the
       // percentage dissolve, the logo stays floating over the intro
       .then(() => preloader.classList.add('intro-mode'))
-      .catch(endIntro); // autoplay blocked: skip straight to the site
-  }
-
-  function endIntro() {
-    if (heroVideo) {
-      heroVideo.play().catch(() => {});
-    }
-    preloader.classList.add('fade-out'); // logo fades out first...
-    setTimeout(() => introScreen.classList.add('fade-out'), 400); // ...then the site is revealed
+      .catch(triggerTransition); // Autoplay blocked: skip straight to the site
   }
 } else if (heroVideo) {
   const ext = supportsWebm ? '.webm' : '.mp4';
