@@ -197,6 +197,7 @@ function getRestingVideo(index) {
 // 7. Safety-seek helper to prevent visual frame flashing
 // ============================
 function prepareVideoToPlay(video, targetTime = 0) {
+  if (isNaN(targetTime)) targetTime = 0; // unloaded video: duration is NaN
   return new Promise((resolve) => {
     if (isNaN(video.duration) || video.duration === 0) {
       video.currentTime = targetTime;
@@ -329,6 +330,28 @@ function preloadAdjacentScreens(index) {
 // ============================
 // 8. Core navigation
 // ============================
+// Fallback when a transition video never arrived or never ended (offline /
+// dead network): cut straight to the target's text over the static backdrop
+// instead of freezing the slider.
+let transitionToken = 0;
+
+function finishWithoutVideo(targetIndex, ...hide) {
+  hide.forEach((v) => {
+    if (v) {
+      v.style.opacity = '0';
+      v.pause();
+    }
+  });
+  const resting = getRestingVideo(targetIndex);
+  if (resting.readyState >= 2) {
+    resting.style.opacity = '1';
+    if (targetIndex === 0) resting.play().catch(() => {});
+  }
+  currentScreen = targetIndex;
+  updateActiveSection(targetIndex);
+  isTransitioning = false;
+}
+
 async function goToScreen(targetIndex) {
   if (targetIndex === currentScreen) return;
   if (targetIndex < 0 || targetIndex >= TOTAL_SCREENS) return;
@@ -351,12 +374,28 @@ async function goToScreen(targetIndex) {
   // Hero banner transitions (Screen 0 <-> Screen 1) get a soft 0.2s fade
   const isHeroTransition = (oldIndex === 0 || targetIndex === 0);
 
+  // ponytail: watchdog — if a stalled video never fires 'ended', force-finish
+  // after 8s instead of freezing navigation forever
+  const inFlight = goingForward ? transitions[targetIndex].forward : transitions[oldIndex].reverse;
+  const token = ++transitionToken;
+  setTimeout(() => {
+    if (isTransitioning && token === transitionToken) {
+      finishWithoutVideo(targetIndex, oldVideo, inFlight);
+    }
+  }, 8000);
+
   if (goingForward) {
     // ——— FORWARD ———
     const video = transitions[targetIndex].forward;
 
     // Make sure the lazy video is fetched before we try to play it
     await ensureVideoLoaded(video);
+
+    // Video never arrived (offline / 4s timeout): skip the cinematic, don't block
+    if (video.readyState < 2) {
+      finishWithoutVideo(targetIndex, oldVideo);
+      return;
+    }
 
     // Seek to start in the background (hidden)
     video.style.opacity = '0';
@@ -429,6 +468,12 @@ async function goToScreen(targetIndex) {
 
     // Make sure both lazy videos are fetched before we try to play them
     await Promise.all([ensureVideoLoaded(reverseVideo), ensureVideoLoaded(targetVideo)]);
+
+    // Reverse video never arrived (offline / 4s timeout): skip the cinematic
+    if (reverseVideo.readyState < 2) {
+      finishWithoutVideo(targetIndex, oldVideo);
+      return;
+    }
 
     // Seek reverse to start in the background (hidden)
     reverseVideo.style.opacity = '0';
@@ -757,6 +802,12 @@ if (preloader && introScreen && introVideo) {
       // percentage dissolve, the logo stays floating over the intro
       .then(() => preloader.classList.add('intro-mode'))
       .catch(triggerTransition); // Autoplay blocked: skip straight to the site
+
+    // ponytail: if playback never starts (stalled network after the 12s
+    // escape hatch), skip the intro instead of holding the gold screen
+    setTimeout(() => {
+      if (introVideo.currentTime === 0) triggerTransition();
+    }, 4000);
   }
 } else if (heroVideo) {
   const ext = supportsWebm ? '.webm' : '.mp4';
