@@ -636,6 +636,11 @@ if (preloader) {
     // 2. Play the intro video and make it visible
     if (preloaderVideo) {
       preloaderVideo.classList.add('active');
+      try {
+        preloaderVideo.currentTime = 0;
+      } catch (e) {
+        console.log("Error resetting video currentTime:", e);
+      }
       preloaderVideo.play()
         .then(() => {
           // Logo zoom animation starts
