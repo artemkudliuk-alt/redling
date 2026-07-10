@@ -591,6 +591,22 @@ if (preloader) {
     return true;
   }
 
+  let currentPercent = 0;
+
+  // 1. Instantly start counting up slowly from 0% in case the video takes a moment to initiate decoding/playback
+  const initialTickInterval = setInterval(() => {
+    if (preloaderVideo && preloaderVideo.currentTime > 0) {
+      clearInterval(initialTickInterval);
+      return;
+    }
+    if (currentPercent < 15) {
+      currentPercent += 1;
+      if (percentageText) {
+        percentageText.textContent = `${currentPercent}%`;
+      }
+    }
+  }, 100);
+
   // Update percentage text dynamically based on preloader video time
   const updatePercentage = () => {
     if (!preloaderVideo || !preloaderVideo.duration) return;
@@ -601,8 +617,10 @@ if (preloader) {
     if (isPreloaderVideoEnded) {
       percentVal = 100;
     } else {
-      // Map progress smoothly up to 97-98%
-      percentVal = Math.min(97, Math.floor((current / duration) * 98));
+      // Map progress smoothly up to 97-98%, ensuring we never go backwards from the simulated tick
+      const videoVal = Math.min(97, Math.floor((current / duration) * 98));
+      percentVal = Math.max(currentPercent, videoVal);
+      currentPercent = percentVal;
     }
     
     if (percentageText) {
@@ -637,11 +655,6 @@ if (preloader) {
   } else {
     isPreloaderVideoEnded = true;
   }
-
-  // 1. Show the logo and start percentage display after exactly 1 second (1000ms)
-  setTimeout(() => {
-    preloader.classList.add('show-logo');
-  }, 1000);
 
   // 2. Monitor hero video ready status
   if (heroVideo) {

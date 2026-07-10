@@ -57,22 +57,11 @@
       width: 180px;
       height: auto;
       filter: brightness(0) invert(1);
-      opacity: 0;
-      transform: scale(0.95);
-      transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .preloader.show-logo .preloader-logo {
       opacity: 1;
       transform: scale(1);
     }
     .preloader-percentage-container {
       margin-top: 24px;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-      transition-delay: 0.3s;
-    }
-    .preloader.show-logo .preloader-percentage-container {
       opacity: 0.85;
       transform: translateY(0);
     }
