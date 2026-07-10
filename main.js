@@ -589,10 +589,28 @@ if (preloader) {
     });
   }
 
+  let stuckCount = 0;
+
   // PHASE 1: Preloader of the Preloader (loading / ticking to 100%)
   // Ticks up from 0% to 100% over ~1.8 seconds (18ms * 100 steps)
   const progressInterval = setInterval(() => {
-    currentPercent += 1;
+    // Check if the intro video is buffered and ready to play (readyState >= 3, HAVE_FUTURE_DATA)
+    // If buffering takes longer than ~4.5 seconds (250 ticks * 18ms), bypass the wait to prevent hangs.
+    const isVideoReady = (preloaderVideo && preloaderVideo.readyState >= 3) || stuckCount > 250;
+
+    if (currentPercent >= 97 && !isVideoReady) {
+      stuckCount++;
+      // Slow tick: crawl by decimals to show visual activity without hitting 100%
+      if (currentPercent < 99.8) {
+        currentPercent += 0.15;
+        if (percentageText) {
+          percentageText.textContent = `${Math.floor(currentPercent)}%`;
+        }
+      }
+      return;
+    }
+
+    currentPercent = Math.min(100, Math.floor(currentPercent) + 1);
     if (percentageText) {
       percentageText.textContent = `${currentPercent}%`;
     }
