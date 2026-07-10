@@ -568,21 +568,30 @@ const preloader = document.getElementById('preloader');
 if (preloader) {
   let isVideoReady = false;
   let isPageLoaded = false;
-  let isMinTimeElapsed = false;
+  let isPreloaderVideoEnded = false;
 
-  // Slow down the preloader video to prevent it from looping/restarting and stretch it beautifully
+  // Monitor preloader video playback and ensure it plays fully to the end
   const preloaderVideo = document.getElementById('preloaderVideo');
   if (preloaderVideo) {
-    preloaderVideo.playbackRate = 0.75; // 75% speed from start (fits 2.5s time smoothly)
+    preloaderVideo.playbackRate = 1.0; // Start at normal speed
     
     preloaderVideo.addEventListener('timeupdate', () => {
-      // If the video is nearing the end (1.8s out of 2.14s) and page/video are still loading, slow it down to a crawl
-      if (preloaderVideo.currentTime >= 1.8) {
-        if (!isVideoReady || !isPageLoaded || !isMinTimeElapsed) {
-          preloaderVideo.playbackRate = 0.2; // 20% speed
+      // If the video is nearing the end (1.85s out of 2.14s) and page is still loading, slow it down to a crawl
+      if (preloaderVideo.currentTime >= 1.85) {
+        if (!isVideoReady || !isPageLoaded) {
+          preloaderVideo.playbackRate = 0.15; // Slow down to 15% speed to wait for load
+        } else {
+          preloaderVideo.playbackRate = 1.0; // Play at normal speed
         }
       }
     });
+
+    preloaderVideo.addEventListener('ended', () => {
+      isPreloaderVideoEnded = true;
+      checkAndHidePreloader();
+    });
+  } else {
+    isPreloaderVideoEnded = true;
   }
 
   // 1. Show the logo after exactly 1 second (1000ms)
@@ -590,13 +599,7 @@ if (preloader) {
     preloader.classList.add('show-logo');
   }, 1000);
 
-  // 2. Set minimal display time (2.5 seconds) to showcase the video and logo fade-in
-  setTimeout(() => {
-    isMinTimeElapsed = true;
-    checkAndHidePreloader();
-  }, 2500);
-
-  // 3. Monitor hero video ready status (skip waiting on mobile devices to prevent browser autoplay throttling delays)
+  // 2. Monitor hero video ready status (skip waiting on mobile devices to prevent browser autoplay throttling delays)
   const isMobile = window.innerWidth <= 991;
   if (heroVideo && !isMobile) {
     if (heroVideo.readyState >= 3) {
@@ -618,7 +621,7 @@ if (preloader) {
     isVideoReady = true;
   }
 
-  // 4. Monitor page load status
+  // 3. Monitor page load status
   if (document.readyState === 'complete') {
     isPageLoaded = true;
     checkAndHidePreloader();
@@ -630,15 +633,18 @@ if (preloader) {
   }
 
   function checkAndHidePreloader() {
-    if (isVideoReady && isPageLoaded && isMinTimeElapsed) {
+    if (isPreloaderVideoEnded && isVideoReady && isPageLoaded) {
       hidePreloader();
     }
   }
 
-  // Safety fallback timeout (5 seconds)
+  // Safety fallback timeout (6 seconds)
   const safetyTimeout = setTimeout(() => {
+    isPreloaderVideoEnded = true;
+    isVideoReady = true;
+    isPageLoaded = true;
     hidePreloader();
-  }, 5000);
+  }, 6000);
 
   function hidePreloader() {
     if (!preloader.classList.contains('fade-out')) {
