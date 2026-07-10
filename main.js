@@ -569,64 +569,37 @@ const preloader = document.getElementById('preloader');
 
 if (preloader) {
   let isPageLoaded = false;
-  let isPreloaderVideoEnded = false;
+  let isProgressFinished = false;
 
   const preloaderVideo = document.getElementById('preloaderVideo');
   const percentageText = document.getElementById('preloaderPercentage');
 
   let currentPercent = 0;
 
-  // 1. Instantly start counting up slowly from 0% in case the video takes a moment to initiate decoding/playback
-  const initialTickInterval = setInterval(() => {
-    if (preloaderVideo && preloaderVideo.currentTime > 0) {
-      clearInterval(initialTickInterval);
+  // Make sure the preloader video tries to play
+  if (preloaderVideo) {
+    preloaderVideo.playbackRate = 1.0;
+    preloaderVideo.play().catch(err => console.log("Preloader video play failed/blocked:", err));
+  }
+
+  // Ticks up from 0% to 100% over exactly 7 seconds (70ms * 100 steps)
+  const progressInterval = setInterval(() => {
+    // If we reach 98% but the page hasn't finished loading yet, hold it at 98%
+    if (currentPercent >= 98 && !isPageLoaded) {
       return;
     }
-    if (currentPercent < 15) {
-      currentPercent += 1;
-      if (percentageText) {
-        percentageText.textContent = `${currentPercent}%`;
-      }
-    }
-  }, 100);
-
-  // Update percentage text dynamically based on preloader video time (mapping 0s-7s to 0%-100% smoothly)
-  const updatePercentage = () => {
-    if (!preloaderVideo || !preloaderVideo.duration) return;
-    const current = preloaderVideo.currentTime;
-    const duration = preloaderVideo.duration || 7.0;
     
-    let percentVal = 0;
-    if (isPreloaderVideoEnded) {
-      percentVal = 100;
-    } else {
-      // Map progress smoothly from 0% to 100% based strictly on the video timeline
-      const videoVal = Math.min(100, Math.floor((current / duration) * 100));
-      percentVal = Math.max(currentPercent, videoVal);
-      currentPercent = percentVal;
-    }
-    
+    currentPercent += 1;
     if (percentageText) {
-      percentageText.textContent = `${percentVal}%`;
+      percentageText.textContent = `${currentPercent}%`;
     }
-  };
-
-  // Monitor preloader video playback and ensure it plays fully to the end
-  if (preloaderVideo) {
-    preloaderVideo.playbackRate = 1.0; // Play at normal speed (7s duration)
     
-    preloaderVideo.addEventListener('timeupdate', updatePercentage);
-
-    preloaderVideo.addEventListener('ended', () => {
-      isPreloaderVideoEnded = true;
-      if (percentageText) {
-        percentageText.textContent = '100%';
-      }
+    if (currentPercent >= 100) {
+      clearInterval(progressInterval);
+      isProgressFinished = true;
       checkAndHidePreloader();
-    });
-  } else {
-    isPreloaderVideoEnded = true;
-  }
+    }
+  }, 70);
 
   // 2. Monitor page load status (we wait for DOM loading, but do NOT block on other videos buffering)
   if (document.readyState === 'complete') {
@@ -640,15 +613,15 @@ if (preloader) {
   }
 
   function checkAndHidePreloader() {
-    if (isPreloaderVideoEnded && isPageLoaded) {
+    if (isProgressFinished && isPageLoaded) {
       hidePreloader();
     }
   }
 
   // Safety fallback timeout (12 seconds)
   const safetyTimeout = setTimeout(() => {
-    isPreloaderVideoEnded = true;
     isPageLoaded = true;
+    isProgressFinished = true;
     hidePreloader();
   }, 12000);
 
