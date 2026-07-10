@@ -579,6 +579,11 @@ if (preloader) {
   const percentageContainer = document.querySelector('.preloader-percentage-container');
   const preloaderLogo = document.querySelector('.preloader-logo');
 
+  // Trigger background buffering immediately while paused at frame 0
+  if (preloaderVideo) {
+    preloaderVideo.load();
+  }
+
   // Track page load event
   if (document.readyState === 'complete') {
     isPageLoaded = true;
@@ -636,11 +641,6 @@ if (preloader) {
     // 2. Play the intro video and make it visible
     if (preloaderVideo) {
       preloaderVideo.classList.add('active');
-      try {
-        preloaderVideo.currentTime = 0;
-      } catch (e) {
-        console.log("Error resetting video currentTime:", e);
-      }
       preloaderVideo.play()
         .then(() => {
           // Logo zoom animation starts
