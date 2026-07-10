@@ -227,12 +227,28 @@ function prepareVideoToPlay(video, targetTime = 0) {
 // sits with preload="none" + data-src until requested here.
 const videoLoadPromises = new Map();
 
+// Detect native WebM (VP9/VP8) support
+const supportsWebm = (() => {
+  try {
+    const video = document.createElement('video');
+    return video.canPlayType('video/webm; codecs="vp9"') === 'probably' ||
+           video.canPlayType('video/webm; codecs="vp8"') === 'probably' ||
+           video.canPlayType('video/webm') !== '';
+  } catch (e) {
+    return false;
+  }
+})();
+
 function ensureVideoLoaded(video) {
   if (!video) return Promise.resolve();
   if (videoLoadPromises.has(video)) return videoLoadPromises.get(video);
 
   if (video.dataset.src && !video.getAttribute('src')) {
-    video.src = video.dataset.src;
+    let src = video.dataset.src;
+    if (supportsWebm) {
+      src = src.replace('.mp4', '.webm');
+    }
+    video.src = src;
     video.removeAttribute('data-src');
     video.preload = 'auto';
     video.load();
@@ -268,12 +284,24 @@ function startPreloadQueue() {
   if (preloadQueueStarted) return;
   preloadQueueStarted = true;
   
-  // Eagerly preload all transition videos in parallel to maximize buffering during the 7s preloader
-  for (let i = 1; i < TOTAL_SCREENS; i++) {
-    if (transitions[i]) {
-      ensureVideoLoaded(transitions[i].forward);
-      ensureVideoLoaded(transitions[i].reverse);
-    }
+  // Eagerly preload only the next screen (Rooms transition) during intro/hero playback to save initial bandwidth
+  if (transitions[1]) {
+    ensureVideoLoaded(transitions[1].forward);
+    ensureVideoLoaded(transitions[1].reverse);
+  }
+}
+
+// Dynamically preload adjacent screens as the user scrolls or navigates
+function preloadAdjacentScreens(index) {
+  // Preload next screen
+  if (index + 1 < TOTAL_SCREENS && transitions[index + 1]) {
+    ensureVideoLoaded(transitions[index + 1].forward);
+    ensureVideoLoaded(transitions[index + 1].reverse);
+  }
+  // Preload previous screen
+  if (index - 1 >= 1 && transitions[index - 1]) {
+    ensureVideoLoaded(transitions[index - 1].forward);
+    ensureVideoLoaded(transitions[index - 1].reverse);
   }
 }
 
@@ -283,6 +311,10 @@ function startPreloadQueue() {
 async function goToScreen(targetIndex) {
   if (targetIndex === currentScreen) return;
   if (targetIndex < 0 || targetIndex >= TOTAL_SCREENS) return;
+
+  // Start preloading the adjacent screens of the target screen immediately
+  preloadAdjacentScreens(targetIndex);
+
   if (isTransitioning) return;
 
   isTransitioning = true;
@@ -573,6 +605,14 @@ if (preloader && introScreen && introVideo) {
   const startedAt = Date.now();
   let percent = 0;
 
+  // Swap to lightweight WebM format if supported by the browser
+  if (supportsWebm) {
+    introVideo.src = 'assets/video/intro.webm';
+    if (heroVideo) {
+      heroVideo.src = 'assets/video/hero.webm';
+    }
+  }
+
   introVideo.load();
 
   const bufferedPercent = () => {
@@ -620,6 +660,9 @@ if (preloader && introScreen && introVideo) {
     setTimeout(() => introScreen.classList.add('fade-out'), 400); // ...then the site is revealed
   }
 } else if (heroVideo) {
+  if (supportsWebm) {
+    heroVideo.src = 'assets/video/hero.webm';
+  }
   heroVideo.load();
   startPreloadQueue();
   heroVideo.play().catch(() => {});
