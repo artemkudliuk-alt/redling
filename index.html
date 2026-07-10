@@ -39,9 +39,22 @@
       height: auto;
       filter: brightness(0) invert(1); /* white logo */
       animation: logo-breath 3s ease-in-out infinite;
+      transform-origin: center;
     }
     @keyframes logo-breath {
       50% { transform: scale(1.04); }
+    }
+    /* Logo zoom animation during the 7s intro video */
+    .preloader.intro-mode .preloader-logo {
+      animation: logo-zoom 7.2s cubic-bezier(0.3, 0, 0.6, 1) forwards;
+    }
+    @keyframes logo-zoom {
+      0% {
+        transform: scale(1);
+      }
+      100% {
+        transform: scale(25);
+      }
     }
     .preloader-percentage {
       font-family: 'Montserrat', sans-serif;
