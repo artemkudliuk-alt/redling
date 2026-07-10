@@ -608,15 +608,16 @@ if (preloader && introScreen && introVideo) {
 
     introVideo.onended = endIntro;
     introVideo.play()
-      // Video is already rendering under the gold screen: fade reveals it, no black gap
-      .then(() => preloader.classList.add('fade-out'))
+      // Video is already rendering under the gold screen: the gold and the
+      // percentage dissolve, the logo stays floating over the intro
+      .then(() => preloader.classList.add('intro-mode'))
       .catch(endIntro); // autoplay blocked: skip straight to the site
   }
 
   function endIntro() {
-    preloader.classList.add('fade-out');
-    introScreen.classList.add('fade-out');
     heroVideo.play().catch(() => {});
+    preloader.classList.add('fade-out'); // logo fades out first...
+    setTimeout(() => introScreen.classList.add('fade-out'), 400); // ...then the site is revealed
   }
 } else if (heroVideo) {
   heroVideo.load();
