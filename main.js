@@ -279,14 +279,18 @@ function ensureVideoLoaded(video) {
 
   const promise = new Promise((resolve) => {
     const finish = () => {
+      video.removeEventListener('canplay', finish);
       video.removeEventListener('canplaythrough', finish);
+      video.removeEventListener('loadeddata', finish);
       video.removeEventListener('error', finish);
       clearTimeout(timer);
       resolve();
     };
     // Safety: never block navigation forever on a slow network
-    const timer = setTimeout(finish, 8000);
+    const timer = setTimeout(finish, 4000);
+    video.addEventListener('canplay', finish);
     video.addEventListener('canplaythrough', finish);
+    video.addEventListener('loadeddata', finish);
     video.addEventListener('error', finish);
   });
   videoLoadPromises.set(video, promise);
@@ -364,21 +368,41 @@ async function goToScreen(targetIndex) {
       video.style.zIndex = '2';
       video.style.transition = 'opacity 0.2s ease';
       video.style.opacity = '1';
-      video.play().catch(() => {});
+      
+      const fadeOld = () => {
+        if (oldVideo.style.opacity !== '0') {
+          oldVideo.style.opacity = '0';
+          oldVideo.pause();
+        }
+      };
 
-      // Wait for the fade-in to finish (200ms) before pausing/hiding old video underneath
-      setTimeout(() => {
-        oldVideo.style.opacity = '0';
-        oldVideo.pause();
-      }, 200);
+      video.play()
+        .then(() => {
+          setTimeout(fadeOld, 200);
+        })
+        .catch(fadeOld);
+
+      // Safety fallback
+      setTimeout(fadeOld, 350);
     } else {
       // Instant cut
       video.style.zIndex = '1';
       video.style.transition = 'none';
       video.style.opacity = '1';
-      oldVideo.style.opacity = '0';
-      oldVideo.pause();
-      video.play().catch(() => {});
+      
+      const startPlay = () => {
+        if (oldVideo.style.opacity !== '0') {
+          oldVideo.style.opacity = '0';
+          oldVideo.pause();
+        }
+      };
+
+      video.play()
+        .then(startPlay)
+        .catch(startPlay);
+
+      // Safety fallback
+      setTimeout(startPlay, 250);
     }
 
     // End transition on ended
@@ -419,21 +443,29 @@ async function goToScreen(targetIndex) {
       reverseVideo.style.transition = 'opacity 0.2s ease';
       reverseVideo.style.opacity = '1';
       
-      reverseVideo.play().catch(() => {});
+      const fadeOld = async () => {
+        if (oldVideo.style.opacity !== '0') {
+          oldVideo.style.opacity = '0';
+          oldVideo.pause();
 
-      // Wait for reverseVideo to fade in fully (200ms) before preparing/playing target (Hero) underneath
-      setTimeout(async () => {
-        oldVideo.style.opacity = '0';
-        oldVideo.pause();
+          // Start Hero loop playing underneath
+          targetVideo.currentTime = 0;
+          targetVideo.loop = true;
+          targetVideo.style.opacity = '1';
+          targetVideo.style.zIndex = '1';
+          targetVideo.style.transition = 'none';
+          try { await targetVideo.play(); } catch (_) {}
+        }
+      };
 
-        // Start Hero loop playing underneath
-        targetVideo.currentTime = 0;
-        targetVideo.loop = true;
-        targetVideo.style.opacity = '1';
-        targetVideo.style.zIndex = '1';
-        targetVideo.style.transition = 'none';
-        try { await targetVideo.play(); } catch (_) {}
-      }, 200);
+      reverseVideo.play()
+        .then(() => {
+          setTimeout(fadeOld, 200);
+        })
+        .catch(fadeOld);
+
+      // Safety fallback
+      setTimeout(fadeOld, 350);
 
       reverseVideo.onended = () => {
         reverseVideo.pause();
@@ -461,10 +493,20 @@ async function goToScreen(targetIndex) {
       targetVideo.pause();
 
       reverseVideo.style.opacity = '1';
-      oldVideo.style.opacity = '0';
-      oldVideo.pause();
+      
+      const startPlay = () => {
+        if (oldVideo.style.opacity !== '0') {
+          oldVideo.style.opacity = '0';
+          oldVideo.pause();
+        }
+      };
 
-      reverseVideo.play().catch(() => {});
+      reverseVideo.play()
+        .then(startPlay)
+        .catch(startPlay);
+
+      // Safety fallback
+      setTimeout(startPlay, 250);
 
       reverseVideo.onended = () => {
         reverseVideo.pause();
