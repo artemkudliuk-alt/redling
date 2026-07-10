@@ -568,6 +568,13 @@ updateActiveSection(0);
 const preloader = document.getElementById('preloader');
 
 if (preloader) {
+  let isPageLoaded = false;
+  let isProgressFinished = false;
+  let currentPercent = 0;
+
+  const preloaderVideo = document.getElementById('preloaderVideo');
+  const percentageText = document.getElementById('preloaderPercentage');
+
   let isVideoPlaying = false;
   let isVideoEnded = false;
 
