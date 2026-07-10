@@ -570,53 +570,28 @@ const preloader = document.getElementById('preloader');
 if (preloader) {
   let isPageLoaded = false;
   let isProgressFinished = false;
+  let isIntroPlaying = false;
+  let isIntroFinished = false;
   let currentPercent = 0;
 
   const preloaderVideo = document.getElementById('preloaderVideo');
   const percentageText = document.getElementById('preloaderPercentage');
+  const percentageContainer = document.querySelector('.preloader-percentage-container');
+  const preloaderLogo = document.querySelector('.preloader-logo');
 
-  let isVideoPlaying = false;
-  let isVideoEnded = false;
-
-  // Make sure the preloader video tries to play and track its state
-  if (preloaderVideo) {
-    preloaderVideo.playbackRate = 1.0;
-    
-    preloaderVideo.addEventListener('playing', () => {
-      isVideoPlaying = true;
-    });
-
-    preloaderVideo.addEventListener('ended', () => {
-      isVideoEnded = true;
-      checkAndHidePreloader();
-    });
-
-    // Fallback if 'ended' event doesn't fire but currentTime is close to duration
-    preloaderVideo.addEventListener('timeupdate', () => {
-      if (preloaderVideo.duration && preloaderVideo.currentTime >= preloaderVideo.duration - 0.15) {
-        isVideoEnded = true;
-        checkAndHidePreloader();
-      }
-    });
-
-    preloaderVideo.play().then(() => {
-      isVideoPlaying = true;
-    }).catch(err => {
-      console.log("Preloader video play failed/blocked:", err);
-      isVideoEnded = true; // Autoplay blocked, treat as ended to bypass wait
-      checkAndHidePreloader();
-    });
+  // Track page load event
+  if (document.readyState === 'complete') {
+    isPageLoaded = true;
   } else {
-    isVideoEnded = true;
+    window.addEventListener('load', () => {
+      isPageLoaded = true;
+      checkAndHidePreloader();
+    });
   }
 
-  // Ticks up from 0% to 100% over exactly 7 seconds (70ms * 100 steps)
+  // PHASE 1: Preloader of the Preloader (loading / ticking to 100%)
+  // Ticks up from 0% to 100% over ~1.8 seconds (18ms * 100 steps)
   const progressInterval = setInterval(() => {
-    // If we reach 98% but the page itself hasn't finished loading yet, hold it at 98%
-    if (currentPercent >= 98 && !isPageLoaded) {
-      return;
-    }
-    
     currentPercent += 1;
     if (percentageText) {
       percentageText.textContent = `${currentPercent}%`;
@@ -625,46 +600,85 @@ if (preloader) {
     if (currentPercent >= 100) {
       clearInterval(progressInterval);
       isProgressFinished = true;
-      checkAndHidePreloader();
-      
-      // Force hide preloader after max 2.5 seconds if video end event is lost or delayed
-      setTimeout(() => {
-        isVideoEnded = true;
-        checkAndHidePreloader();
-      }, 2500);
+      startIntroPhase();
     }
-  }, 70);
+  }, 18);
 
-  // 2. Monitor page load status (we wait for DOM loading, but do NOT block on other videos buffering)
-  if (document.readyState === 'complete') {
-    isPageLoaded = true;
-    checkAndHidePreloader();
-  } else {
-    window.addEventListener('load', () => {
-      isPageLoaded = true;
+  let introTimeout = null;
+
+  // PHASE 2: Start playing the cinematic Intro
+  function startIntroPhase() {
+    isIntroPlaying = true;
+
+    // 1. Hide the percentage text smoothly
+    if (percentageContainer) {
+      percentageContainer.classList.add('hide');
+    }
+
+    // 2. Play the intro video and make it visible
+    if (preloaderVideo) {
+      preloaderVideo.classList.add('active');
+      preloaderVideo.play()
+        .then(() => {
+          // Logo zoom animation starts
+          if (preloaderLogo) {
+            preloaderLogo.classList.add('intro-playing');
+          }
+        })
+        .catch(err => {
+          console.log("Intro video autoplay failed or was blocked:", err);
+          // If video playback fails, skip straight to exit
+          isIntroFinished = true;
+          checkAndHidePreloader();
+        });
+
+      // Listen for the video ending to transition to the site
+      preloaderVideo.addEventListener('ended', onIntroEnded);
+      
+      // Fallback if 'ended' event doesn't fire but currentTime is close to duration
+      preloaderVideo.addEventListener('timeupdate', () => {
+        if (preloaderVideo.duration && preloaderVideo.currentTime >= preloaderVideo.duration - 0.15) {
+          onIntroEnded();
+        }
+      });
+    } else {
+      isIntroFinished = true;
       checkAndHidePreloader();
-    });
+    }
+
+    // Cinematic Intro safety duration limit (7.5 seconds)
+    introTimeout = setTimeout(() => {
+      onIntroEnded();
+    }, 7500);
+  }
+
+  function onIntroEnded() {
+    if (introTimeout) clearTimeout(introTimeout);
+    isIntroFinished = true;
+    checkAndHidePreloader();
   }
 
   function checkAndHidePreloader() {
-    // Hide only if progress is 100%, page is loaded, and video has finished playing (or is blocked)
-    const isVideoReadyToHide = !preloaderVideo || isVideoEnded || !isVideoPlaying;
-    if (isProgressFinished && isPageLoaded && isVideoReadyToHide) {
+    // Only fade out if:
+    // 1. The page loading is complete (DOM window.onload has fired)
+    // 2. AND the cinematic intro video has finished playing (or was skipped)
+    if (isPageLoaded && isIntroFinished) {
       hidePreloader();
     }
   }
 
-  // Safety fallback timeout (12 seconds)
+  // Safety fallback timeout (15 seconds total)
   const safetyTimeout = setTimeout(() => {
     isPageLoaded = true;
     isProgressFinished = true;
-    isVideoEnded = true;
+    isIntroFinished = true;
     hidePreloader();
-  }, 12000);
+  }, 15000);
 
   function hidePreloader() {
     if (!preloader.classList.contains('fade-out')) {
       clearTimeout(safetyTimeout);
+      if (introTimeout) clearTimeout(introTimeout);
       clearInterval(progressInterval);
       preloader.classList.add('fade-out');
       
