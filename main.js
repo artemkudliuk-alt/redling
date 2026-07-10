@@ -568,18 +568,39 @@ updateActiveSection(0);
 const preloader = document.getElementById('preloader');
 
 if (preloader) {
-  let isPageLoaded = false;
-  let isProgressFinished = false;
+  let isVideoPlaying = false;
+  let isVideoEnded = false;
 
-  const preloaderVideo = document.getElementById('preloaderVideo');
-  const percentageText = document.getElementById('preloaderPercentage');
-
-  let currentPercent = 0;
-
-  // Make sure the preloader video tries to play
+  // Make sure the preloader video tries to play and track its state
   if (preloaderVideo) {
     preloaderVideo.playbackRate = 1.0;
-    preloaderVideo.play().catch(err => console.log("Preloader video play failed/blocked:", err));
+    
+    preloaderVideo.addEventListener('playing', () => {
+      isVideoPlaying = true;
+    });
+
+    preloaderVideo.addEventListener('ended', () => {
+      isVideoEnded = true;
+      checkAndHidePreloader();
+    });
+
+    // Fallback if 'ended' event doesn't fire but currentTime is close to duration
+    preloaderVideo.addEventListener('timeupdate', () => {
+      if (preloaderVideo.duration && preloaderVideo.currentTime >= preloaderVideo.duration - 0.15) {
+        isVideoEnded = true;
+        checkAndHidePreloader();
+      }
+    });
+
+    preloaderVideo.play().then(() => {
+      isVideoPlaying = true;
+    }).catch(err => {
+      console.log("Preloader video play failed/blocked:", err);
+      isVideoEnded = true; // Autoplay blocked, treat as ended to bypass wait
+      checkAndHidePreloader();
+    });
+  } else {
+    isVideoEnded = true;
   }
 
   // Ticks up from 0% to 100% over exactly 7 seconds (70ms * 100 steps)
@@ -598,6 +619,12 @@ if (preloader) {
       clearInterval(progressInterval);
       isProgressFinished = true;
       checkAndHidePreloader();
+      
+      // Force hide preloader after max 2.5 seconds if video end event is lost or delayed
+      setTimeout(() => {
+        isVideoEnded = true;
+        checkAndHidePreloader();
+      }, 2500);
     }
   }, 70);
 
@@ -613,7 +640,9 @@ if (preloader) {
   }
 
   function checkAndHidePreloader() {
-    if (isProgressFinished && isPageLoaded) {
+    // Hide only if progress is 100%, page is loaded, and video has finished playing (or is blocked)
+    const isVideoReadyToHide = !preloaderVideo || isVideoEnded || !isVideoPlaying;
+    if (isProgressFinished && isPageLoaded && isVideoReadyToHide) {
       hidePreloader();
     }
   }
@@ -622,6 +651,7 @@ if (preloader) {
   const safetyTimeout = setTimeout(() => {
     isPageLoaded = true;
     isProgressFinished = true;
+    isVideoEnded = true;
     hidePreloader();
   }, 12000);
 
