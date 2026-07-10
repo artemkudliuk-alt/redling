@@ -568,28 +568,11 @@ updateActiveSection(0);
 const preloader = document.getElementById('preloader');
 
 if (preloader) {
-  let isVideoReady = false;
   let isPageLoaded = false;
   let isPreloaderVideoEnded = false;
 
   const preloaderVideo = document.getElementById('preloaderVideo');
   const percentageText = document.getElementById('preloaderPercentage');
-
-  // Helper to check if all videos on the site (hero + all transitions) are ready to play
-  function areCriticalVideosReady() {
-    if (heroVideo && heroVideo.readyState < 3) return false;
-    
-    // Check all transition videos (forward and reverse)
-    for (let i = 1; i < TOTAL_SCREENS; i++) {
-      const t = transitions[i];
-      if (t) {
-        // readyState >= 2 (HAVE_CURRENT_DATA) ensures the video metadata is loaded and it is ready to play immediately
-        if (t.forward && t.forward.readyState < 2) return false;
-        if (t.reverse && t.reverse.readyState < 2) return false;
-      }
-    }
-    return true;
-  }
 
   let currentPercent = 0;
 
@@ -607,7 +590,7 @@ if (preloader) {
     }
   }, 100);
 
-  // Update percentage text dynamically based on preloader video time
+  // Update percentage text dynamically based on preloader video time (mapping 0s-7s to 0%-100% smoothly)
   const updatePercentage = () => {
     if (!preloaderVideo || !preloaderVideo.duration) return;
     const current = preloaderVideo.currentTime;
@@ -617,8 +600,8 @@ if (preloader) {
     if (isPreloaderVideoEnded) {
       percentVal = 100;
     } else {
-      // Map progress smoothly up to 97-98%, ensuring we never go backwards from the simulated tick
-      const videoVal = Math.min(97, Math.floor((current / duration) * 98));
+      // Map progress smoothly from 0% to 100% based strictly on the video timeline
+      const videoVal = Math.min(100, Math.floor((current / duration) * 100));
       percentVal = Math.max(currentPercent, videoVal);
       currentPercent = percentVal;
     }
@@ -632,18 +615,7 @@ if (preloader) {
   if (preloaderVideo) {
     preloaderVideo.playbackRate = 1.0; // Play at normal speed (7s duration)
     
-    preloaderVideo.addEventListener('timeupdate', () => {
-      updatePercentage();
-      
-      // If the video is nearing the end (6.7s out of 7.0s) and critical videos/page are still loading, slow it down to a crawl
-      if (preloaderVideo.currentTime >= 6.7) {
-        if (!areCriticalVideosReady() || !isPageLoaded) {
-          preloaderVideo.playbackRate = 0.15; // Slow down to 15% speed (crawls and stays at 97%)
-        } else {
-          preloaderVideo.playbackRate = 1.0; // Play at normal speed
-        }
-      }
-    });
+    preloaderVideo.addEventListener('timeupdate', updatePercentage);
 
     preloaderVideo.addEventListener('ended', () => {
       isPreloaderVideoEnded = true;
@@ -656,28 +628,7 @@ if (preloader) {
     isPreloaderVideoEnded = true;
   }
 
-  // 2. Monitor hero video ready status
-  if (heroVideo) {
-    if (heroVideo.readyState >= 3) {
-      isVideoReady = true;
-      checkAndHidePreloader();
-    } else {
-      const markVideoReady = () => {
-        isVideoReady = true;
-        checkAndHidePreloader();
-        heroVideo.removeEventListener('canplay', markVideoReady);
-        heroVideo.removeEventListener('canplaythrough', markVideoReady);
-        heroVideo.removeEventListener('loadeddata', markVideoReady);
-      };
-      heroVideo.addEventListener('canplay', markVideoReady);
-      heroVideo.addEventListener('canplaythrough', markVideoReady);
-      heroVideo.addEventListener('loadeddata', markVideoReady);
-    }
-  } else {
-    isVideoReady = true;
-  }
-
-  // 3. Monitor page load status
+  // 2. Monitor page load status (we wait for DOM loading, but do NOT block on other videos buffering)
   if (document.readyState === 'complete') {
     isPageLoaded = true;
     checkAndHidePreloader();
@@ -689,7 +640,7 @@ if (preloader) {
   }
 
   function checkAndHidePreloader() {
-    if (isPreloaderVideoEnded && isVideoReady && isPageLoaded && areCriticalVideosReady()) {
+    if (isPreloaderVideoEnded && isPageLoaded) {
       hidePreloader();
     }
   }
@@ -697,7 +648,6 @@ if (preloader) {
   // Safety fallback timeout (12 seconds)
   const safetyTimeout = setTimeout(() => {
     isPreloaderVideoEnded = true;
-    isVideoReady = true;
     isPageLoaded = true;
     hidePreloader();
   }, 12000);
