@@ -223,7 +223,7 @@ function prepareVideoToPlay(video, targetTime = 0) {
 // ============================
 // 7b. Lazy video loading (data-src → src)
 // ============================
-// Only preloader.mp4 and hero.mp4 load eagerly; every transition video
+// Only intro.mp4 loads eagerly; hero + every transition video
 // sits with preload="none" + data-src until requested here.
 const videoLoadPromises = new Map();
 
@@ -558,168 +558,71 @@ if (closeVideoBtn && videoModal && youtubeIframe) {
 }
 
 // ============================
-// 13. Init with Preloader
+// 13. Preloader -> intro video -> site
 // ============================
 initVideoLayers();
 updateMenuHighlight(0);
 updateActiveSection(0);
 
-// Preloader elements
 const preloader = document.getElementById('preloader');
+const introScreen = document.getElementById('introScreen');
+const introVideo = document.getElementById('introVideo');
 
-if (preloader) {
-  let isPageLoaded = false;
-  let isProgressFinished = false;
-  let isIntroPlaying = false;
-  let isIntroFinished = false;
-  let currentPercent = 0;
+if (preloader && introScreen && introVideo) {
+  const percentEl = document.getElementById('preloaderPercentage');
+  const startedAt = Date.now();
+  let percent = 0;
 
-  const preloaderVideo = document.getElementById('preloaderVideo');
-  const percentageText = document.getElementById('preloaderPercentage');
-  const percentageContainer = document.querySelector('.preloader-percentage-container');
-  const preloaderLogo = document.querySelector('.preloader-logo');
+  introVideo.load();
 
-  // Trigger background buffering immediately while paused at frame 0
-  if (preloaderVideo) {
-    preloaderVideo.load();
+  const bufferedPercent = () => {
+    const b = introVideo.buffered;
+    if (!introVideo.duration || !b.length) return 0;
+    return (b.end(b.length - 1) / introVideo.duration) * 100;
+  };
+
+  let lastTick = Date.now();
+
+  const tick = setInterval(() => {
+    // Time-based step (40%/s): background tabs throttle timers to ~1/s
+    const now = Date.now();
+    const step = (now - lastTick) * 0.04;
+    lastTick = now;
+
+    // ponytail: 12s escape hatch so a dead network never traps the user here
+    const ready = introVideo.readyState >= 4 || now - startedAt > 12000;
+    // Percent follows real buffering, parks at 99% until canplaythrough
+    const target = ready ? 100 : Math.min(99, bufferedPercent());
+    percent = Math.min(percent + step, Math.max(percent, target));
+    percentEl.textContent = `${Math.floor(percent)}%`;
+    if (percent >= 100) {
+      clearInterval(tick);
+      startIntro();
+    }
+  }, 50);
+
+  function startIntro() {
+    // Intro is fully buffered: now fetch hero + transition videos behind it
+    heroVideo.load();
+    startPreloadQueue();
+
+    introVideo.onended = endIntro;
+    introVideo.play()
+      // Video is already rendering under the gold screen: fade reveals it, no black gap
+      .then(() => preloader.classList.add('fade-out'))
+      .catch(endIntro); // autoplay blocked: skip straight to the site
   }
 
-  // Track page load event
-  if (document.readyState === 'complete') {
-    isPageLoaded = true;
-  } else {
-    window.addEventListener('load', () => {
-      isPageLoaded = true;
-      checkAndHidePreloader();
-    });
-  }
-
-  let stuckCount = 0;
-
-  // PHASE 1: Preloader of the Preloader (loading / ticking to 100%)
-  // Ticks up from 0% to 100% over ~1.8 seconds (18ms * 100 steps)
-  const progressInterval = setInterval(() => {
-    // Check if the intro video is buffered and ready to play (readyState >= 3, HAVE_FUTURE_DATA)
-    // If buffering takes longer than ~4.5 seconds (250 ticks * 18ms), bypass the wait to prevent hangs.
-    const isVideoReady = (preloaderVideo && preloaderVideo.readyState >= 3) || stuckCount > 250;
-
-    if (currentPercent >= 97 && !isVideoReady) {
-      stuckCount++;
-      // Slow tick: crawl by decimals to show visual activity without hitting 100%
-      if (currentPercent < 99.8) {
-        currentPercent += 0.15;
-        if (percentageText) {
-          percentageText.textContent = `${Math.floor(currentPercent)}%`;
-        }
-      }
-      return;
-    }
-
-    currentPercent = Math.min(100, Math.floor(currentPercent) + 1);
-    if (percentageText) {
-      percentageText.textContent = `${currentPercent}%`;
-    }
-    
-    if (currentPercent >= 100) {
-      clearInterval(progressInterval);
-      isProgressFinished = true;
-      startIntroPhase();
-    }
-  }, 18);
-
-  let introTimeout = null;
-
-  // PHASE 2: Start playing the cinematic Intro
-  function startIntroPhase() {
-    isIntroPlaying = true;
-
-    // 1. Hide the percentage text smoothly
-    if (percentageContainer) {
-      percentageContainer.classList.add('hide');
-    }
-
-    // 2. Play the intro video and make it visible
-    if (preloaderVideo) {
-      preloaderVideo.classList.add('active');
-      preloaderVideo.play()
-        .then(() => {
-          // Logo zoom animation starts
-          if (preloaderLogo) {
-            preloaderLogo.classList.add('intro-playing');
-          }
-        })
-        .catch(err => {
-          console.log("Intro video autoplay failed or was blocked:", err);
-          // If video playback fails, skip straight to exit
-          isIntroFinished = true;
-          checkAndHidePreloader();
-        });
-
-      // Listen for the video ending to transition to the site
-      preloaderVideo.addEventListener('ended', onIntroEnded);
-      
-      // Fallback if 'ended' event doesn't fire but currentTime is close to duration
-      preloaderVideo.addEventListener('timeupdate', () => {
-        if (preloaderVideo.duration && preloaderVideo.currentTime >= preloaderVideo.duration - 0.15) {
-          onIntroEnded();
-        }
-      });
-    } else {
-      isIntroFinished = true;
-      checkAndHidePreloader();
-    }
-
-    // Cinematic Intro safety duration limit (7.5 seconds)
-    introTimeout = setTimeout(() => {
-      onIntroEnded();
-    }, 7500);
-  }
-
-  function onIntroEnded() {
-    if (introTimeout) clearTimeout(introTimeout);
-    isIntroFinished = true;
-    checkAndHidePreloader();
-  }
-
-  function checkAndHidePreloader() {
-    // Only fade out if:
-    // 1. The page loading is complete (DOM window.onload has fired)
-    // 2. AND the cinematic intro video has finished playing (or was skipped)
-    if (isPageLoaded && isIntroFinished) {
-      hidePreloader();
-    }
-  }
-
-  // Safety fallback timeout (15 seconds total)
-  const safetyTimeout = setTimeout(() => {
-    isPageLoaded = true;
-    isProgressFinished = true;
-    isIntroFinished = true;
-    hidePreloader();
-  }, 15000);
-
-  function hidePreloader() {
-    if (!preloader.classList.contains('fade-out')) {
-      clearTimeout(safetyTimeout);
-      if (introTimeout) clearTimeout(introTimeout);
-      clearInterval(progressInterval);
-      preloader.classList.add('fade-out');
-      
-      // Auto-play the main hero video
-      if (heroVideo) {
-        heroVideo.play().catch(err => console.log("Hero autoplay blocked/failed:", err));
-      }
-    }
-  }
-} else {
-  // Fallback if elements don't exist
-  if (heroVideo) {
+  function endIntro() {
+    preloader.classList.add('fade-out');
+    introScreen.classList.add('fade-out');
     heroVideo.play().catch(() => {});
   }
+} else if (heroVideo) {
+  heroVideo.load();
+  startPreloadQueue();
+  heroVideo.play().catch(() => {});
 }
-
-// Kick off background loading of transition videos immediately in parallel
-startPreloadQueue();
 
 // ============================================================
 // 14. Internationalization (i18n)
