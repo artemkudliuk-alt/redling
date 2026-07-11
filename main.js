@@ -289,6 +289,7 @@ const isMobile = (() => {
 
 // Video folder path based on device category
 const videoFolder = isMobile ? 'assets/video/mobile/' : 'assets/video/';
+const VIDEO_CDN_BASE = 'https://artemkudliuk-alt.github.io/redling/';
 
 function ensureVideoLoaded(video) {
   if (!video) return Promise.resolve();
@@ -304,7 +305,7 @@ function ensureVideoLoaded(video) {
     if (supportsWebm) {
       src = src.replace('.mp4', '.webm');
     }
-    video.src = src;
+    video.src = VIDEO_CDN_BASE + src;
     video.removeAttribute('data-src');
     video.preload = 'auto';
     video.load();
@@ -831,9 +832,9 @@ if (preloader && introScreen && introVideo) {
 
   // Set correct sources dynamically (combining mobile/desktop and webm/mp4 formats)
   const ext = supportsWebm ? '.webm' : '.mp4';
-  introVideo.src = `${videoFolder}intro${ext}`;
+  introVideo.src = `${VIDEO_CDN_BASE}${videoFolder}intro${ext}`;
   if (heroVideo) {
-    heroVideo.src = `${videoFolder}hero${ext}`;
+    heroVideo.src = `${VIDEO_CDN_BASE}${videoFolder}hero${ext}`;
   }
 
   introVideo.load();
@@ -931,7 +932,7 @@ if (preloader && introScreen && introVideo) {
   }
 } else if (heroVideo) {
   const ext = supportsWebm ? '.webm' : '.mp4';
-  heroVideo.src = `${videoFolder}hero${ext}`;
+  heroVideo.src = `${VIDEO_CDN_BASE}${videoFolder}hero${ext}`;
   heroVideo.load();
   startPreloadQueue();
   heroVideo.play().catch(() => {});
