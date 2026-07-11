@@ -88,8 +88,8 @@
   </style>
 
   <link rel="icon" type="image/svg+xml" href="assets/img/logo.svg">
-  <script type="module" crossorigin src="./assets/index-CXlthOsW.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CGmxJ-_i.css">
+  <script type="module" crossorigin src="./assets/index-bjXVK4ZB.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CGiTwsIM.css">
 </head>
 <body>
 
@@ -196,7 +196,9 @@
       <!-- Screen 5: Contacts — forward & reverse -->
       <video id="videoContacts" class="bg-video" muted playsinline preload="none" data-src="assets/video/contacts.mp4"></video>
       <video id="videoContactsRev" class="bg-video" muted playsinline preload="none" data-src="assets/video/contacts_reverse.mp4"></video>
-      
+      <!-- Static resting posters to prevent black frames on mobile when decoders are evicted -->
+      <div id="videoPosterLayer" class="video-poster-layer"></div>
+
       <div class="video-overlay"></div>
     </div>
 
