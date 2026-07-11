@@ -18,6 +18,13 @@
   box-sizing: border-box;
 }
 
+/* Keyboard Navigation Focus Indicator */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+}
+
 html {
   height: 100%;
   overflow: hidden;
@@ -821,7 +828,7 @@ h1, h2, h3, h4, h5, h6 {
 .section-subtitle {
   font-size: 13px;
   font-weight: 700;
-  color: #00f0ec;
+  color: var(--color-primary);
   text-transform: uppercase;
   letter-spacing: 3px;
   margin-bottom: 16px;
@@ -958,14 +965,7 @@ h1, h2, h3, h4, h5, h6 {
   background-color: rgba(255, 255, 255, 0.05);
 }
 
-/* Work Hours Badge */
-.work-hours-badge {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-left: 3px solid var(--color-primary);
-  padding: 16px 20px;
-  margin-bottom: 30px;
-  border-radius: 0;
-}
+/* Unused work-hours-badge removed to clean up slop */
 
 /* Custom YouTube Button with play icon */
 .btn-youtube-sharp {

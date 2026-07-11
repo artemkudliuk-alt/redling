@@ -79,15 +79,21 @@ if (menuToggle && sidebar) {
 // 2. Phone Dropdown
 // ============================
 if (phoneBtn && phoneDropMenu) {
+  const updateAriaExpanded = () => {
+    const isExpanded = phoneDropMenu.classList.contains('show');
+    phoneBtn.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+  };
   phoneBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     phoneBtn.classList.toggle('open');
     phoneDropMenu.classList.toggle('show');
+    updateAriaExpanded();
   });
   document.addEventListener('click', (e) => {
     if (!phoneBtn.contains(e.target) && !phoneDropMenu.contains(e.target)) {
       phoneBtn.classList.remove('open');
       phoneDropMenu.classList.remove('show');
+      updateAriaExpanded();
     }
   });
 }
@@ -575,6 +581,12 @@ let wheelAccumulator = 0;
 const WHEEL_THRESHOLD = 50;
 
 function handleWheel(e) {
+  // Disable background scrolling when modal is open
+  const vModal = document.getElementById('videoModal');
+  const gModal = document.getElementById('galleryModal');
+  if (vModal && vModal.classList.contains('show')) return;
+  if (gModal && gModal.classList.contains('show')) return;
+
   // Let a tall mobile section scroll its own content before flipping screens
   const scrollable = getScrollableActiveSection();
   if (scrollable) {
@@ -617,6 +629,11 @@ document.addEventListener('touchstart', (e) => {
 }, { passive: true });
 
 document.addEventListener('touchend', (e) => {
+  const vModal = document.getElementById('videoModal');
+  const gModal = document.getElementById('galleryModal');
+  if (vModal && vModal.classList.contains('show')) return;
+  if (gModal && gModal.classList.contains('show')) return;
+
   if (isTransitioning) return;
   const diff = touchStartY - e.changedTouches[0].clientY;
 
@@ -639,6 +656,11 @@ document.addEventListener('touchend', (e) => {
 }, { passive: true });
 
 document.addEventListener('touchmove', (e) => {
+  const vModal = document.getElementById('videoModal');
+  const gModal = document.getElementById('galleryModal');
+  if (vModal && vModal.classList.contains('show')) return;
+  if (gModal && gModal.classList.contains('show')) return;
+
   // Native scrolling stays enabled inside a tall active section;
   // everything else is blocked (kills iOS rubber-band bounce)
   const scrollable = getScrollableActiveSection();
@@ -650,6 +672,11 @@ document.addEventListener('touchmove', (e) => {
 // 11. Keyboard (arrows, page keys)
 // ============================
 document.addEventListener('keydown', (e) => {
+  const vModal = document.getElementById('videoModal');
+  const gModal = document.getElementById('galleryModal');
+  if (vModal && vModal.classList.contains('show')) return;
+  if (gModal && gModal.classList.contains('show')) return;
+
   if (isTransitioning) return;
   if (e.key === 'ArrowDown' || e.key === 'PageDown') {
     e.preventDefault();
@@ -668,12 +695,23 @@ const youtubeIframe = document.getElementById('youtubeIframe');
 const openVideoBtn = document.getElementById('openVideoBtn');
 const closeVideoBtn = document.getElementById('closeVideoBtn');
 
+function getCurrentActiveVideo() {
+  if (currentScreen === 0) return heroVideo;
+  return transitions[currentScreen] ? transitions[currentScreen].forward : null;
+}
+
 if (openVideoBtn && videoModal && youtubeIframe) {
   openVideoBtn.addEventListener('click', (e) => {
     e.preventDefault();
     youtubeIframe.src = "https://www.youtube.com/embed/n7kd0tzGD2s?autoplay=1";
     videoModal.style.display = 'flex';
     setTimeout(() => videoModal.classList.add('show'), 10);
+
+    // Pause active background video loop to save resources
+    const activeVideo = getCurrentActiveVideo();
+    if (activeVideo) {
+      activeVideo.pause();
+    }
   });
 }
 
@@ -684,6 +722,12 @@ if (closeVideoBtn && videoModal && youtubeIframe) {
       videoModal.style.display = 'none';
       youtubeIframe.src = ""; // Clear source to stop video playback
     }, 300);
+
+    // Resume background video loop (only if on screen 0)
+    const activeVideo = getCurrentActiveVideo();
+    if (activeVideo && currentScreen === 0) {
+      activeVideo.play().catch(() => {});
+    }
   });
 
   videoModal.addEventListener('click', (e) => {
@@ -1089,6 +1133,12 @@ function initPhotoGallery() {
     
     // Disable scroll on parent page
     document.body.style.overflow = 'hidden';
+
+    // Pause active background video loop to save resources
+    const activeVideo = getCurrentActiveVideo();
+    if (activeVideo) {
+      activeVideo.pause();
+    }
   });
   
   const closeModal = () => {
@@ -1097,6 +1147,12 @@ function initPhotoGallery() {
       galleryModal.style.display = 'none';
       document.body.style.overflow = 'hidden'; // preserve website slider overflow
     }, 300);
+
+    // Resume background video loop (only if on screen 0)
+    const activeVideo = getCurrentActiveVideo();
+    if (activeVideo && currentScreen === 0) {
+      activeVideo.play().catch(() => {});
+    }
   };
   
   closeGalleryBtn.addEventListener('click', closeModal);
