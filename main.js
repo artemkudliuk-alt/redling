@@ -303,6 +303,11 @@ const VIDEO_CDN_BASE = 'https://artemkudliuk-alt.github.io/redling/';
 
 function ensureVideoLoaded(video) {
   if (!video) return Promise.resolve();
+
+  // Check if simulated slow network is enabled via query param
+  const urlParams = new URLSearchParams(window.location.search);
+  const simulateSlow = urlParams.has('simulate_slow');
+
   if (videoLoadPromises.has(video)) return videoLoadPromises.get(video);
 
   if (video.dataset.src && !video.getAttribute('src')) {
@@ -317,7 +322,7 @@ function ensureVideoLoaded(video) {
     video.load();
   }
 
-  if (video.readyState >= 3) {
+  if (video.readyState >= 3 && !simulateSlow) {
     const ready = Promise.resolve();
     videoLoadPromises.set(video, ready);
     return ready;
@@ -330,7 +335,13 @@ function ensureVideoLoaded(video) {
       video.removeEventListener('loadeddata', finish);
       video.removeEventListener('error', finish);
       clearTimeout(timer);
-      resolve();
+
+      if (simulateSlow) {
+        // Force 2000ms delay to simulate slow connection
+        setTimeout(resolve, 2000);
+      } else {
+        resolve();
+      }
     };
     // Safety: never block navigation forever on a slow network
     const timer = setTimeout(finish, 4000);
