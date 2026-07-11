@@ -43,7 +43,17 @@ const phoneBtn = document.getElementById('phoneBtn');
 const phoneDropMenu = document.getElementById('phoneDropMenu');
 const menuLinks = document.querySelectorAll('.menu-link');
 const videoOverlay = document.querySelector('.video-overlay');
+const videoPosterLayer = document.getElementById('videoPosterLayer');
 const SECTION_IDS = ['hero', 'rooms', 'pool', 'restaurant', 'atmosphere', 'contacts'];
+
+const POSTER_IMAGES = [
+  'assets/video/hero_poster.webp',
+  'assets/video/posters/rooms_resting.webp',
+  'assets/video/posters/pool_resting.webp',
+  'assets/video/posters/restaurant_resting.webp',
+  'assets/video/posters/atmosphere_resting.webp',
+  'assets/video/posters/contacts_resting.webp'
+];
 
 // --- State ---
 let currentScreen = 0;
@@ -370,11 +380,30 @@ function finishWithoutVideo(targetIndex, ...hide) {
       v.pause();
     }
   });
+
+  if (videoPosterLayer) {
+    videoPosterLayer.style.backgroundImage = `url(${POSTER_IMAGES[targetIndex]})`;
+    videoPosterLayer.classList.add('active');
+  }
+
   const resting = getRestingVideo(targetIndex);
   if (resting.readyState >= 2) {
     resting.style.opacity = '1';
-    if (targetIndex === 0) resting.play().catch(() => {});
+    if (targetIndex === 0) {
+      resting.play()
+        .then(() => {
+          if (videoPosterLayer) videoPosterLayer.classList.remove('active');
+        })
+        .catch(() => {});
+    }
+  } else if (targetIndex === 0) {
+    resting.play()
+      .then(() => {
+        if (videoPosterLayer) videoPosterLayer.classList.remove('active');
+      })
+      .catch(() => {});
   }
+
   currentScreen = targetIndex;
   updateActiveSection(targetIndex);
   isTransitioning = false;
@@ -441,6 +470,9 @@ async function goToScreen(targetIndex) {
           oldVideo.style.opacity = '0';
           oldVideo.pause();
         }
+        if (videoPosterLayer) {
+          videoPosterLayer.classList.remove('active');
+        }
       };
 
       video.play()
@@ -461,6 +493,9 @@ async function goToScreen(targetIndex) {
         if (oldVideo.style.opacity !== '0') {
           oldVideo.style.opacity = '0';
           oldVideo.pause();
+        }
+        if (videoPosterLayer) {
+          videoPosterLayer.classList.remove('active');
         }
       };
 
@@ -484,6 +519,12 @@ async function goToScreen(targetIndex) {
 
       currentScreen = targetIndex;
       
+      // Show static resting poster for the new resting state
+      if (videoPosterLayer) {
+        videoPosterLayer.style.backgroundImage = `url(${POSTER_IMAGES[targetIndex]})`;
+        videoPosterLayer.classList.add('active');
+      }
+
       // Fade in target text only AFTER video reaches the end
       updateActiveSection(targetIndex);
       isTransitioning = false;
@@ -510,8 +551,6 @@ async function goToScreen(targetIndex) {
 
     if (isHeroTransition) {
       // Soft fade transition (0.2s)
-      // Keep oldVideo at opacity 1 on zIndex 1.
-      // Fade in reverseVideo on zIndex 2.
       reverseVideo.style.zIndex = '2';
       reverseVideo.style.transition = 'opacity 0.2s ease';
       reverseVideo.style.opacity = '1';
@@ -528,6 +567,9 @@ async function goToScreen(targetIndex) {
           targetVideo.style.zIndex = '1';
           targetVideo.style.transition = 'none';
           try { await targetVideo.play(); } catch (_) {}
+        }
+        if (videoPosterLayer) {
+          videoPosterLayer.classList.remove('active');
         }
       };
 
@@ -551,12 +593,16 @@ async function goToScreen(targetIndex) {
         // Start fading in target text (Hero) at the start of reverse fade out
         updateActiveSection(targetIndex);
         
+        if (videoPosterLayer) {
+          videoPosterLayer.classList.remove('active');
+        }
+
         setTimeout(() => {
           reverseVideo.style.zIndex = '1';
           reverseVideo.style.transition = 'none';
           currentScreen = targetIndex;
           isTransitioning = false;
-        }, 200); // 200ms matches 0.2s transition
+        }, 200);
       };
 
     } else {
@@ -571,6 +617,9 @@ async function goToScreen(targetIndex) {
         if (oldVideo.style.opacity !== '0') {
           oldVideo.style.opacity = '0';
           oldVideo.pause();
+        }
+        if (videoPosterLayer) {
+          videoPosterLayer.classList.remove('active');
         }
       };
 
@@ -587,6 +636,11 @@ async function goToScreen(targetIndex) {
 
         targetVideo.style.opacity = '1';
         reverseVideo.style.opacity = '0';
+
+        if (videoPosterLayer) {
+          videoPosterLayer.style.backgroundImage = `url(${POSTER_IMAGES[targetIndex]})`;
+          videoPosterLayer.classList.add('active');
+        }
 
         currentScreen = targetIndex;
         updateActiveSection(targetIndex); // Fade in target text at the end
