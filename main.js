@@ -287,8 +287,18 @@ const isMobile = (() => {
   }
 })();
 
-// Video folder path based on device category
-const videoFolder = isMobile ? 'assets/video/mobile/' : 'assets/video/';
+// Slow-network tier: picks the ultra-light 540p set (assets/video/3g/)
+// and aggressive whole-path preloading. Chrome/Android reports the link
+// via navigator.connection; iOS has no API, so the preloader also measures
+// how fast the intro actually buffers and can flip this flag at runtime.
+const conn = navigator.connection || {};
+let slowNet = !!conn.saveData || /2g|3g/.test(conn.effectiveType || '') ||
+  /[?&]3g/.test(location.search); // debug: ?3g forces the slow tier for eyeballing quality
+
+// Video folder by tier: slow net -> 540p, phone -> 720p, desktop -> 1080p
+const videoDir = () =>
+  slowNet ? 'assets/video/3g/' : (isMobile ? 'assets/video/mobile/' : 'assets/video/');
+
 const VIDEO_CDN_BASE = 'https://artemkudliuk-alt.github.io/redling/';
 
 function ensureVideoLoaded(video) {
@@ -296,11 +306,7 @@ function ensureVideoLoaded(video) {
   if (videoLoadPromises.has(video)) return videoLoadPromises.get(video);
 
   if (video.dataset.src && !video.getAttribute('src')) {
-    let src = video.dataset.src;
-    // Replace default video path with mobile folder if mobile
-    if (isMobile) {
-      src = src.replace('assets/video/', 'assets/video/mobile/');
-    }
+    let src = video.dataset.src.replace('assets/video/', videoDir());
     // Swap extension to webm if supported
     if (supportsWebm) {
       src = src.replace('.mp4', '.webm');
@@ -344,8 +350,20 @@ let preloadQueueStarted = false;
 function startPreloadQueue() {
   if (preloadQueueStarted) return;
   preloadQueueStarted = true;
-  
-  // Eagerly preload only the next screen (Rooms transition) during intro/hero playback to save initial bandwidth
+
+  if (slowNet) {
+    // 540p tier files are ~300KB: buffer the WHOLE path sequentially
+    // (nearest screens first) while the user is still reading the hero
+    (async () => {
+      for (let i = 1; i < TOTAL_SCREENS; i++) {
+        await ensureVideoLoaded(transitions[i].forward);
+        await ensureVideoLoaded(transitions[i].reverse);
+      }
+    })();
+    return;
+  }
+
+  // Fast networks: preload only the next screen; the rest load adjacently on scroll
   if (transitions[1]) {
     ensureVideoLoaded(transitions[1].forward);
     ensureVideoLoaded(transitions[1].reverse);
@@ -830,14 +848,17 @@ if (preloader && introScreen && introVideo) {
   const startedAt = Date.now();
   let percent = 0;
 
-  // Set correct sources dynamically (combining mobile/desktop and webm/mp4 formats)
+  // Set the intro source by tier (slow-net 540p / mobile 720p / desktop 1080p)
   const ext = supportsWebm ? '.webm' : '.mp4';
-  introVideo.src = `${VIDEO_CDN_BASE}${videoFolder}intro${ext}`;
-  if (heroVideo) {
-    heroVideo.src = `${VIDEO_CDN_BASE}${videoFolder}hero${ext}`;
-  }
+  introVideo.src = `${VIDEO_CDN_BASE}${videoDir()}intro${ext}`;
 
   introVideo.load();
+
+  // iOS has no navigator.connection: if the intro can't buffer 60% within
+  // 4s, treat the link as slow — hero and every later video drop to 540p
+  setTimeout(() => {
+    if (introVideo.readyState < 4 && bufferedPercent() < 60) slowNet = true;
+  }, 4000);
 
   const bufferedPercent = () => {
     const b = introVideo.buffered;
@@ -883,8 +904,10 @@ if (preloader && introScreen && introVideo) {
   }, 50);
 
   function startIntro() {
-    // Intro is fully buffered: now fetch hero + transition videos behind it
+    // Intro is fully buffered: now fetch hero + transition videos behind it.
+    // Hero src is chosen here so a runtime slow-net downgrade affects it.
     if (heroVideo) {
+      heroVideo.src = `${VIDEO_CDN_BASE}${videoDir()}hero${ext}`;
       heroVideo.load();
     }
     startPreloadQueue();
@@ -932,7 +955,7 @@ if (preloader && introScreen && introVideo) {
   }
 } else if (heroVideo) {
   const ext = supportsWebm ? '.webm' : '.mp4';
-  heroVideo.src = `${VIDEO_CDN_BASE}${videoFolder}hero${ext}`;
+  heroVideo.src = `${VIDEO_CDN_BASE}${videoDir()}hero${ext}`;
   heroVideo.load();
   startPreloadQueue();
   heroVideo.play().catch(() => {});
