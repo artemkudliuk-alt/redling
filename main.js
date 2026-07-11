@@ -42,11 +42,13 @@ const menuToggle = document.getElementById('menuToggle');
 const phoneBtn = document.getElementById('phoneBtn');
 const phoneDropMenu = document.getElementById('phoneDropMenu');
 const menuLinks = document.querySelectorAll('.menu-link');
+const videoOverlay = document.querySelector('.video-overlay');
 const SECTION_IDS = ['hero', 'rooms', 'pool', 'restaurant', 'atmosphere', 'contacts'];
 
 // --- State ---
 let currentScreen = 0;
 let isTransitioning = false;
+let activeSectionTimeout = null;
 
 // ============================
 // 1. Sidebar / Mobile Menu
@@ -125,16 +127,36 @@ function updateMenuHighlight(index) {
 
 function updateActiveSection(index) {
   const sections = document.querySelectorAll('.content-section');
-  sections.forEach((sec, idx) => {
-    sec.classList.toggle('active', idx === index);
-    if (idx === index) {
-      // Mobile sections scroll internally — always arrive at the top.
-      // Re-assert on the next frame: async work (iframe load, focus) can
-      // silently auto-scroll the section and hide the heading.
-      sec.scrollTop = 0;
-      requestAnimationFrame(() => { sec.scrollTop = 0; });
+  
+  if (activeSectionTimeout) {
+    clearTimeout(activeSectionTimeout);
+    activeSectionTimeout = null;
+  }
+  
+  if (index === -1) {
+    // Instantly fade out text & fade out dark overlay
+    sections.forEach((sec) => sec.classList.remove('active'));
+    if (videoOverlay) {
+      videoOverlay.classList.remove('active');
     }
-  });
+  } else {
+    // Darken screen immediately (video-overlay starts fading in first)
+    if (videoOverlay) {
+      videoOverlay.classList.add('active');
+    }
+    
+    // Fade in text after 150ms (giving overlay a slight head start)
+    activeSectionTimeout = setTimeout(() => {
+      sections.forEach((sec, idx) => {
+        sec.classList.toggle('active', idx === index);
+        if (idx === index) {
+          sec.scrollTop = 0;
+          requestAnimationFrame(() => { sec.scrollTop = 0; });
+        }
+      });
+    }, 150);
+  }
+
   // Contacts map embed loads only once the screen is actually reached
   if (index === SECTION_IDS.indexOf('contacts')) loadMapIframe();
 }

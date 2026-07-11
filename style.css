@@ -459,6 +459,11 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(12, 14, 18, 0.52);
   z-index: 3;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+}
+.video-overlay.active {
+  opacity: 1;
 }
 
 /* Foreground Sections Container */
