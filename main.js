@@ -464,8 +464,19 @@ async function goToScreen(targetIndex) {
     // ——— FORWARD ———
     const video = transitions[targetIndex].forward;
 
+    // Detect slow/stalled loading dynamically
+    let loadStalled = false;
+    const stallTimer = setTimeout(() => {
+      loadStalled = true;
+      if (videoPosterLayer) {
+        videoPosterLayer.style.backgroundImage = `url(${POSTER_IMAGES[currentScreen]})`;
+        videoPosterLayer.classList.add('active');
+      }
+    }, 400); // 400ms threshold for slow connections
+
     // Make sure the lazy video is fetched before we try to play it
     await ensureVideoLoaded(video);
+    clearTimeout(stallTimer);
 
     // Video never arrived (offline / 4s timeout): skip the cinematic, don't block
     if (video.readyState < 2) {
@@ -538,10 +549,16 @@ async function goToScreen(targetIndex) {
 
       currentScreen = targetIndex;
       
-      // Show static resting poster for the new resting state
-      if (videoPosterLayer) {
-        videoPosterLayer.style.backgroundImage = `url(${POSTER_IMAGES[targetIndex]})`;
-        videoPosterLayer.classList.add('active');
+      // Show static resting poster only if the connection was slow
+      if (loadStalled) {
+        if (videoPosterLayer) {
+          videoPosterLayer.style.backgroundImage = `url(${POSTER_IMAGES[targetIndex]})`;
+          videoPosterLayer.classList.add('active');
+        }
+      } else {
+        if (videoPosterLayer) {
+          videoPosterLayer.classList.remove('active');
+        }
       }
 
       // Fade in target text only AFTER video reaches the end
@@ -554,8 +571,19 @@ async function goToScreen(targetIndex) {
     const reverseVideo = transitions[oldIndex].reverse;
     const targetVideo = getRestingVideo(targetIndex);
 
+    // Detect slow/stalled loading dynamically
+    let loadStalled = false;
+    const stallTimer = setTimeout(() => {
+      loadStalled = true;
+      if (videoPosterLayer) {
+        videoPosterLayer.style.backgroundImage = `url(${POSTER_IMAGES[currentScreen]})`;
+        videoPosterLayer.classList.add('active');
+      }
+    }, 400); // 400ms threshold for slow connections
+
     // Make sure both lazy videos are fetched before we try to play them
     await Promise.all([ensureVideoLoaded(reverseVideo), ensureVideoLoaded(targetVideo)]);
+    clearTimeout(stallTimer);
 
     // Reverse video never arrived (offline / 4s timeout): skip the cinematic
     if (reverseVideo.readyState < 2) {
@@ -656,9 +684,15 @@ async function goToScreen(targetIndex) {
         targetVideo.style.opacity = '1';
         reverseVideo.style.opacity = '0';
 
-        if (videoPosterLayer) {
-          videoPosterLayer.style.backgroundImage = `url(${POSTER_IMAGES[targetIndex]})`;
-          videoPosterLayer.classList.add('active');
+        if (loadStalled) {
+          if (videoPosterLayer) {
+            videoPosterLayer.style.backgroundImage = `url(${POSTER_IMAGES[targetIndex]})`;
+            videoPosterLayer.classList.add('active');
+          }
+        } else {
+          if (videoPosterLayer) {
+            videoPosterLayer.classList.remove('active');
+          }
         }
 
         currentScreen = targetIndex;
