@@ -584,7 +584,9 @@ async function goToScreen(targetIndex) {
       const resting = getRestingVideo(targetIndex);
       if (resting) {
         resting.style.opacity = '1';
-        resting.play().catch(() => {});
+        if (targetIndex === 0) {
+          resting.play().catch(() => {});
+        }
       }
 
       // Fade in target text only AFTER video reaches the end
@@ -691,8 +693,6 @@ async function goToScreen(targetIndex) {
         reverseVideo.onended = null;
 
         targetVideo.style.opacity = '1';
-        targetVideo.style.loop = true;
-        targetVideo.play().catch(() => {});
         reverseVideo.style.opacity = '0';
 
         currentScreen = targetIndex;
