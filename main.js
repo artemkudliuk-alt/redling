@@ -134,14 +134,32 @@ function updateActiveSection(index) {
   }
   
   if (index === -1) {
-    // Instantly fade out text & fade out dark overlay
+    // Во время транзишна: убрать текст и весь overlay (и hero и active)
     sections.forEach((sec) => sec.classList.remove('active'));
     if (videoOverlay) {
       videoOverlay.classList.remove('active');
+      videoOverlay.classList.remove('hero');
     }
-  } else {
-    // Darken screen immediately (video-overlay starts fading in first)
+  } else if (index === 0) {
+    // Hero экран: убрать полное затемнение, оставить лёгкое микрозатемнение
     if (videoOverlay) {
+      videoOverlay.classList.remove('active');
+      videoOverlay.classList.add('hero');
+    }
+    // Показать hero секцию с небольшой задержкой
+    activeSectionTimeout = setTimeout(() => {
+      sections.forEach((sec, idx) => {
+        sec.classList.toggle('active', idx === 0);
+        if (idx === 0) {
+          sec.scrollTop = 0;
+          requestAnimationFrame(() => { sec.scrollTop = 0; });
+        }
+      });
+    }, 150);
+  } else {
+    // Другие экраны: убрать hero overlay, добавить полное затемнение
+    if (videoOverlay) {
+      videoOverlay.classList.remove('hero');
       videoOverlay.classList.add('active');
     }
     
@@ -972,6 +990,16 @@ if (preloader && introScreen && introVideo) {
       // Smoothly fade out both the gold preloader logo and the intro video layer
       preloader.classList.add('fade-out');
       introScreen.classList.add('fade-out');
+
+      // Лёгкое микрозатемнение появляется вместе с hero видео:
+      // небольшая задержка даёт intro fade-out начаться первым,
+      // затем overlay плавно накладывается поверх hero — создавая
+      // эффект мягкого перехода без резкого появления видео.
+      setTimeout(() => {
+        if (videoOverlay) {
+          videoOverlay.classList.add('hero');
+        }
+      }, 200);
     };
 
     // Monitor playback progress to fade out early, preventing frozen end-frame cuts

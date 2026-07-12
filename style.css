@@ -462,10 +462,14 @@ h1, h2, h3, h4, h5, h6 {
   z-index: 3;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.4s ease-out;
+  transition: opacity 0.6s ease-out;
 }
 .video-overlay.active {
   opacity: 1;
+}
+/* Лёгкое микрозатемнение на hero экране — появляется при переходе с intro */
+.video-overlay.hero {
+  opacity: 0.38;
 }
 
 /* Foreground Sections Container */
