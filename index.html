@@ -10,7 +10,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  
+
+  <!-- Resting-frame poster fallbacks (~90KB total): the safety net shown when a
+       transition video stalls on a weak connection. Preloaded here, at low
+       priority so they never compete with the intro video for bandwidth, so
+       they're already cached by the time any transition could possibly need
+       one — the fallback itself must never depend on the network at the
+       moment it's needed. -->
+  <link rel="preload" as="image" href="assets/video/hero_poster.webp" fetchpriority="low">
+  <link rel="preload" as="image" href="assets/video/posters/rooms_resting.webp" fetchpriority="low">
+  <link rel="preload" as="image" href="assets/video/posters/pool_resting.webp" fetchpriority="low">
+  <link rel="preload" as="image" href="assets/video/posters/restaurant_resting.webp" fetchpriority="low">
+  <link rel="preload" as="image" href="assets/video/posters/atmosphere_resting.webp" fetchpriority="low">
+  <link rel="preload" as="image" href="assets/video/posters/contacts_resting.webp" fetchpriority="low">
+
   <!-- Critical CSS: preloader must render before main stylesheet loads -->
   <style>
     .preloader {
