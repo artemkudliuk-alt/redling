@@ -1014,6 +1014,7 @@ if (preloader && introScreen && introVideo) {
 
       introVideo.ontimeupdate = null;
       introVideo.onended = null;
+      detachIntroStallGuard();
 
       // Start playing the hero video loop underneath immediately
       if (heroVideo) {
@@ -1033,6 +1034,14 @@ if (preloader && introScreen && introVideo) {
     };
 
     introVideo.onended = triggerTransition;
+
+    // Same mid-playback stall risk as transition clips, but on the very
+    // first thing a visitor sees: intro starts, then a weak connection
+    // can't keep feeding it, and neither ontimeupdate nor onended ever
+    // fires again — the gold screen would sit there indefinitely.
+    const detachIntroStallGuard = attachStallGuard(introVideo, () => {
+      if (!transitioned) triggerTransition();
+    });
 
     introVideo.play()
       // Video is already rendering under the gold screen: the gold and the
