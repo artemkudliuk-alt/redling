@@ -448,22 +448,25 @@ function finishWithoutVideo(targetIndex, ...hide) {
   }
 
   const resting = getRestingVideo(targetIndex);
-  if (resting.readyState >= 2) {
+  const clearPoster = () => { if (videoPosterLayer) videoPosterLayer.classList.remove('active'); };
+
+  if (targetIndex === 0) {
+    // Hero must end up playing regardless of current readyState — it's the
+    // resting loop, not a one-shot clip. Opacity is set unconditionally
+    // BEFORE play() resolves: the poster covers the gap, so there is no
+    // window where the video is revealed while still fully transparent
+    // (that gap used to leave hero invisible — a real black screen — when
+    // play() resolved on a connection too slow to have buffered a frame yet).
     resting.style.opacity = '1';
-    if (targetIndex === 0) {
-      resting.play()
-        .then(() => {
-          if (videoPosterLayer) videoPosterLayer.classList.remove('active');
-        })
-        .catch(() => {});
-    }
-  } else if (targetIndex === 0) {
-    resting.play()
-      .then(() => {
-        if (videoPosterLayer) videoPosterLayer.classList.remove('active');
-      })
-      .catch(() => {});
+    resting.play().then(clearPoster).catch(() => {});
+  } else if (resting.readyState >= 2) {
+    // Static resting screens: the video's own last frame already matches
+    // the poster, safe to reveal and drop the poster in the same breath.
+    resting.style.opacity = '1';
+    clearPoster();
   }
+  // else: nothing loaded for this screen yet — stay on the poster instead
+  // of a blank layer; the next successful transition clears it.
 
   currentScreen = targetIndex;
   updateActiveSection(targetIndex);
