@@ -450,27 +450,7 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-.video-poster-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  /* Belt-and-suspenders: if the poster image itself somehow fails to
-     paint, this is a neutral panel instead of a void into the near-black
-     body background — the fallback must never itself read as broken. */
-  background-color: #1c1f26;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  z-index: 2;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-.video-poster-layer.active {
-  opacity: 1;
-}
+
 
 .video-overlay {
   position: absolute;

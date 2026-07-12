@@ -43,17 +43,7 @@ const phoneBtn = document.getElementById('phoneBtn');
 const phoneDropMenu = document.getElementById('phoneDropMenu');
 const menuLinks = document.querySelectorAll('.menu-link');
 const videoOverlay = document.querySelector('.video-overlay');
-const videoPosterLayer = document.getElementById('videoPosterLayer');
 const SECTION_IDS = ['hero', 'rooms', 'pool', 'restaurant', 'atmosphere', 'contacts'];
-
-const POSTER_IMAGES = [
-  'assets/video/hero_poster.webp',
-  'assets/video/posters/rooms_resting.webp',
-  'assets/video/posters/pool_resting.webp',
-  'assets/video/posters/restaurant_resting.webp',
-  'assets/video/posters/atmosphere_resting.webp',
-  'assets/video/posters/contacts_resting.webp'
-];
 
 // --- State ---
 let currentScreen = 0;
@@ -203,23 +193,36 @@ function getScrollableActiveSection() {
 // ============================
 // 5. Reset all video styles
 // ============================
+// A carrier-side compression proxy (common on weak/budget mobile data) can
+// strip heavy tags like <video> out of the HTML before it reaches the
+// browser. One missing element here used to throw and — since this file
+// is a module — silently kill EVERYTHING after it, including the code
+// that hides the preloader: a permanently stuck gold/white screen. Every
+// element is optional-chained so a missing one is skipped, not fatal.
 function initVideoLayers() {
-  heroVideo.style.opacity = '1';
-  heroVideo.style.zIndex = '1';
-  heroVideo.style.transition = 'none';
-  
+  if (heroVideo) {
+    heroVideo.style.opacity = '1';
+    heroVideo.style.zIndex = '1';
+    heroVideo.style.transition = 'none';
+  }
+
   for (let i = 1; i < TOTAL_SCREENS; i++) {
     const t = transitions[i];
-    
-    t.forward.style.opacity = '0';
-    t.forward.style.zIndex = '1';
-    t.forward.style.transition = 'none';
-    t.forward.pause();
-    
-    t.reverse.style.opacity = '0';
-    t.reverse.style.zIndex = '1';
-    t.reverse.style.transition = 'none';
-    t.reverse.pause();
+    if (!t) continue;
+
+    if (t.forward) {
+      t.forward.style.opacity = '0';
+      t.forward.style.zIndex = '1';
+      t.forward.style.transition = 'none';
+      t.forward.pause();
+    }
+
+    if (t.reverse) {
+      t.reverse.style.opacity = '0';
+      t.reverse.style.zIndex = '1';
+      t.reverse.style.transition = 'none';
+      t.reverse.pause();
+    }
   }
 }
 
@@ -299,19 +302,14 @@ const isMobile = (() => {
 const conn = navigator.connection || {};
 const veryBadEffectiveType = conn.effectiveType === 'slow-2g' || conn.effectiveType === '2g';
 const veryLowDownlink = typeof conn.downlink === 'number' && conn.downlink > 0 && conn.downlink < 0.6;
-let slowNet = !!conn.saveData || veryBadEffectiveType || veryLowDownlink ||
-  /[?&]3g/.test(location.search); // debug: ?3g forces the slow tier for eyeballing quality
+let slowNet = !!conn.saveData || veryBadEffectiveType || veryLowDownlink;
 
-// Video folder by tier: slow net -> 540p, phone -> 720p, desktop -> 1080p
+// Video folder by tier: mobile -> assets/video/mobile/, desktop -> assets/video/
 const videoDir = () =>
-  slowNet ? 'assets/video/3g/' : (isMobile ? 'assets/video/mobile/' : 'assets/video/');
+  isMobile ? 'assets/video/mobile/' : 'assets/video/';
 
 function ensureVideoLoaded(video) {
   if (!video) return Promise.resolve();
-
-  // Check if simulated slow network is enabled via query param
-  const urlParams = new URLSearchParams(window.location.search);
-  const simulateSlow = urlParams.has('simulate_slow');
 
   if (videoLoadPromises.has(video)) return videoLoadPromises.get(video);
 
@@ -327,7 +325,7 @@ function ensureVideoLoaded(video) {
     video.load();
   }
 
-  if (video.readyState >= 3 && !simulateSlow) {
+  if (video.readyState >= 3) {
     const ready = Promise.resolve();
     videoLoadPromises.set(video, ready);
     return ready;
@@ -340,13 +338,7 @@ function ensureVideoLoaded(video) {
       video.removeEventListener('loadeddata', finish);
       video.removeEventListener('error', finish);
       clearTimeout(timer);
-
-      if (simulateSlow) {
-        // Force 2000ms delay to simulate slow connection
-        setTimeout(resolve, 2000);
-      } else {
-        resolve();
-      }
+      resolve();
     };
     // Safety: never block navigation forever on a slow network
     const timer = setTimeout(finish, 4000);
@@ -415,6 +407,7 @@ let transitionToken = 0;
 // a short grace absorbs the harmless post-seek blip every video has, then
 // calls onStall if no progress resumes.
 function attachStallGuard(video, onStall) {
+  if (!video) return () => {}; // element missing from the DOM — nothing to watch
   let stallTimer = null;
   const onWaiting = () => {
     clearTimeout(stallTimer);
@@ -442,31 +435,30 @@ function finishWithoutVideo(targetIndex, ...hide) {
     }
   });
 
-  if (videoPosterLayer) {
-    videoPosterLayer.style.backgroundImage = `url(${POSTER_IMAGES[targetIndex]})`;
-    videoPosterLayer.classList.add('active');
-  }
-
   const resting = getRestingVideo(targetIndex);
-  const clearPoster = () => { if (videoPosterLayer) videoPosterLayer.classList.remove('active'); };
+
+  if (!resting) {
+    currentScreen = targetIndex;
+    updateActiveSection(targetIndex);
+    isTransitioning = false;
+    return;
+  }
 
   if (targetIndex === 0) {
-    // Hero must end up playing regardless of current readyState — it's the
-    // resting loop, not a one-shot clip. Opacity is set unconditionally
-    // BEFORE play() resolves: the poster covers the gap, so there is no
-    // window where the video is revealed while still fully transparent
-    // (that gap used to leave hero invisible — a real black screen — when
-    // play() resolved on a connection too slow to have buffered a frame yet).
     resting.style.opacity = '1';
-    resting.play().then(clearPoster).catch(() => {});
+    resting.play().catch(() => {});
   } else if (resting.readyState >= 2) {
-    // Static resting screens: the video's own last frame already matches
-    // the poster, safe to reveal and drop the poster in the same breath.
     resting.style.opacity = '1';
-    clearPoster();
+  } else {
+    const onReady = () => {
+      resting.removeEventListener('loadeddata', onReady);
+      resting.removeEventListener('canplay', onReady);
+      if (currentScreen !== targetIndex || isTransitioning) return;
+      resting.style.opacity = '1';
+    };
+    resting.addEventListener('loadeddata', onReady);
+    resting.addEventListener('canplay', onReady);
   }
-  // else: nothing loaded for this screen yet — stay on the poster instead
-  // of a blank layer; the next successful transition clears it.
 
   currentScreen = targetIndex;
   updateActiveSection(targetIndex);
@@ -520,22 +512,11 @@ async function goToScreen(targetIndex) {
     // ——— FORWARD ———
     const video = transitions[targetIndex].forward;
 
-    // Detect slow/stalled loading dynamically
-    let loadStalled = false;
-    const stallTimer = setTimeout(() => {
-      loadStalled = true;
-      if (videoPosterLayer) {
-        videoPosterLayer.style.backgroundImage = `url(${POSTER_IMAGES[currentScreen]})`;
-        videoPosterLayer.classList.add('active');
-      }
-    }, 400); // 400ms threshold for slow connections
-
     // Make sure the lazy video is fetched before we try to play it
     await ensureVideoLoaded(video);
-    clearTimeout(stallTimer);
 
     // Video never arrived (offline / 4s timeout): skip the cinematic, don't block
-    if (video.readyState < 2) {
+    if (!video || video.readyState < 2) {
       forceFallback();
       return;
     }
@@ -555,9 +536,6 @@ async function goToScreen(targetIndex) {
         if (oldVideo.style.opacity !== '0') {
           oldVideo.style.opacity = '0';
           oldVideo.pause();
-        }
-        if (videoPosterLayer) {
-          videoPosterLayer.classList.remove('active');
         }
       };
 
@@ -579,9 +557,6 @@ async function goToScreen(targetIndex) {
         if (oldVideo.style.opacity !== '0') {
           oldVideo.style.opacity = '0';
           oldVideo.pause();
-        }
-        if (videoPosterLayer) {
-          videoPosterLayer.classList.remove('active');
         }
       };
 
@@ -606,16 +581,10 @@ async function goToScreen(targetIndex) {
 
       currentScreen = targetIndex;
       
-      // Show static resting poster only if the connection was slow
-      if (loadStalled) {
-        if (videoPosterLayer) {
-          videoPosterLayer.style.backgroundImage = `url(${POSTER_IMAGES[targetIndex]})`;
-          videoPosterLayer.classList.add('active');
-        }
-      } else {
-        if (videoPosterLayer) {
-          videoPosterLayer.classList.remove('active');
-        }
+      const resting = getRestingVideo(targetIndex);
+      if (resting) {
+        resting.style.opacity = '1';
+        resting.play().catch(() => {});
       }
 
       // Fade in target text only AFTER video reaches the end
@@ -628,19 +597,8 @@ async function goToScreen(targetIndex) {
     const reverseVideo = transitions[oldIndex].reverse;
     const targetVideo = getRestingVideo(targetIndex);
 
-    // Detect slow/stalled loading dynamically
-    let loadStalled = false;
-    const stallTimer = setTimeout(() => {
-      loadStalled = true;
-      if (videoPosterLayer) {
-        videoPosterLayer.style.backgroundImage = `url(${POSTER_IMAGES[currentScreen]})`;
-        videoPosterLayer.classList.add('active');
-      }
-    }, 400); // 400ms threshold for slow connections
-
     // Make sure both lazy videos are fetched before we try to play them
     await Promise.all([ensureVideoLoaded(reverseVideo), ensureVideoLoaded(targetVideo)]);
-    clearTimeout(stallTimer);
 
     // Reverse video never arrived (offline / 4s timeout): skip the cinematic
     if (reverseVideo.readyState < 2) {
@@ -672,9 +630,6 @@ async function goToScreen(targetIndex) {
           targetVideo.style.transition = 'none';
           try { await targetVideo.play(); } catch (_) {}
         }
-        if (videoPosterLayer) {
-          videoPosterLayer.classList.remove('active');
-        }
       };
 
       reverseVideo.play()
@@ -698,10 +653,6 @@ async function goToScreen(targetIndex) {
         // Start fading in target text (Hero) at the start of reverse fade out
         updateActiveSection(targetIndex);
         
-        if (videoPosterLayer) {
-          videoPosterLayer.classList.remove('active');
-        }
-
         setTimeout(() => {
           reverseVideo.style.zIndex = '1';
           reverseVideo.style.transition = 'none';
@@ -714,6 +665,8 @@ async function goToScreen(targetIndex) {
       // Instant cut transition
       // Prepare target resting video underneath
       await prepareVideoToPlay(targetVideo, targetVideo.duration - 0.01);
+      targetVideo.loop = true;
+      targetVideo.play().catch(() => {});
       targetVideo.pause();
 
       reverseVideo.style.opacity = '1';
@@ -722,9 +675,6 @@ async function goToScreen(targetIndex) {
         if (oldVideo.style.opacity !== '0') {
           oldVideo.style.opacity = '0';
           oldVideo.pause();
-        }
-        if (videoPosterLayer) {
-          videoPosterLayer.classList.remove('active');
         }
       };
 
@@ -741,18 +691,9 @@ async function goToScreen(targetIndex) {
         reverseVideo.onended = null;
 
         targetVideo.style.opacity = '1';
+        targetVideo.style.loop = true;
+        targetVideo.play().catch(() => {});
         reverseVideo.style.opacity = '0';
-
-        if (loadStalled) {
-          if (videoPosterLayer) {
-            videoPosterLayer.style.backgroundImage = `url(${POSTER_IMAGES[targetIndex]})`;
-            videoPosterLayer.classList.add('active');
-          }
-        } else {
-          if (videoPosterLayer) {
-            videoPosterLayer.classList.remove('active');
-          }
-        }
 
         currentScreen = targetIndex;
         updateActiveSection(targetIndex); // Fade in target text at the end
@@ -928,6 +869,13 @@ if (closeVideoBtn && videoModal && youtubeIframe) {
 // ============================
 // 13. Preloader -> intro video -> site
 // ============================
+// Last-resort net around the whole bootstrap: on a weak/mangled mobile
+// connection (a compression proxy stripping tags, a missing asset, any
+// unforeseen error), this used to be able to throw and — since this file
+// is a module — silently kill everything after it, including i18n and
+// the photo gallery init further down, leaving the gold screen stuck
+// forever. Whatever breaks in here, the site must still become visible.
+try {
 initVideoLayers();
 updateMenuHighlight(0);
 updateActiveSection(0);
@@ -1061,6 +1009,14 @@ if (preloader && introScreen && introVideo) {
   heroVideo.load();
   startPreloadQueue();
   heroVideo.play().catch(() => {});
+}
+} catch (err) {
+  console.error('Preloader bootstrap failed, showing the site directly:', err);
+  const preloaderEl = document.getElementById('preloader');
+  const introScreenEl = document.getElementById('introScreen');
+  if (preloaderEl) preloaderEl.classList.add('fade-out');
+  if (introScreenEl) introScreenEl.classList.add('fade-out');
+  if (heroVideo) heroVideo.play().catch(() => {});
 }
 
 // ============================================================
