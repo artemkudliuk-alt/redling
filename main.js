@@ -287,19 +287,24 @@ const isMobile = (() => {
   }
 })();
 
-// Slow-network tier: picks the ultra-light 540p set (assets/video/3g/)
-// and aggressive whole-path preloading. Chrome/Android reports the link
-// via navigator.connection; iOS has no API, so the preloader also measures
-// how fast the intro actually buffers and can flip this flag at runtime.
+// Slow-network tier: picks the ultra-light 540p set (assets/video/3g/) and
+// aggressive whole-path preloading. Reserved for GENUINELY bad connections
+// only — the 720p mobile tier is the default for phones on decent 3G/4G/5G,
+// this must not fire on ordinary WiFi/4G traffic. Two explicit signals:
+// - navigator.connection: 'slow-2g'/'2g' bucket, or a measured downlink
+//   under 0.6 Mbps, or the user's own Data Saver toggle (saveData)
+// - iOS has no navigator.connection API at all, so the preloader below also
+//   measures how fast the intro *actually* buffers and can flip this flag
+//   at runtime if it's clearly struggling
 const conn = navigator.connection || {};
-let slowNet = !!conn.saveData || /2g|3g/.test(conn.effectiveType || '') ||
+const veryBadEffectiveType = conn.effectiveType === 'slow-2g' || conn.effectiveType === '2g';
+const veryLowDownlink = typeof conn.downlink === 'number' && conn.downlink > 0 && conn.downlink < 0.6;
+let slowNet = !!conn.saveData || veryBadEffectiveType || veryLowDownlink ||
   /[?&]3g/.test(location.search); // debug: ?3g forces the slow tier for eyeballing quality
 
 // Video folder by tier: slow net -> 540p, phone -> 720p, desktop -> 1080p
 const videoDir = () =>
   slowNet ? 'assets/video/3g/' : (isMobile ? 'assets/video/mobile/' : 'assets/video/');
-
-const VIDEO_CDN_BASE = 'https://artemkudliuk-alt.github.io/redling/';
 
 function ensureVideoLoaded(video) {
   if (!video) return Promise.resolve();
@@ -316,7 +321,7 @@ function ensureVideoLoaded(video) {
     if (supportsWebm) {
       src = src.replace('.mp4', '.webm');
     }
-    video.src = VIDEO_CDN_BASE + src;
+    video.src = src;
     video.removeAttribute('data-src');
     video.preload = 'auto';
     video.load();
@@ -403,6 +408,32 @@ function preloadAdjacentScreens(index) {
 // instead of freezing the slider.
 let transitionToken = 0;
 
+// Detects a video that STARTED playing but ran out of buffered data mid-clip
+// (readyState passed the initial "can start" bar, then the weak connection
+// can't keep feeding it) — the exact case that used to freeze on a stuck
+// frame for up to 8s. 'waiting'/'stalled' fire the instant playback stalls;
+// a short grace absorbs the harmless post-seek blip every video has, then
+// calls onStall if no progress resumes.
+function attachStallGuard(video, onStall) {
+  let stallTimer = null;
+  const onWaiting = () => {
+    clearTimeout(stallTimer);
+    stallTimer = setTimeout(onStall, 1200);
+  };
+  const onProgress = () => clearTimeout(stallTimer);
+  video.addEventListener('waiting', onWaiting);
+  video.addEventListener('stalled', onWaiting);
+  video.addEventListener('playing', onProgress);
+  video.addEventListener('timeupdate', onProgress);
+  return () => {
+    clearTimeout(stallTimer);
+    video.removeEventListener('waiting', onWaiting);
+    video.removeEventListener('stalled', onWaiting);
+    video.removeEventListener('playing', onProgress);
+    video.removeEventListener('timeupdate', onProgress);
+  };
+}
+
 function finishWithoutVideo(targetIndex, ...hide) {
   hide.forEach((v) => {
     if (v) {
@@ -461,15 +492,26 @@ async function goToScreen(targetIndex) {
   // Hero banner transitions (Screen 0 <-> Screen 1) get a soft 0.2s fade
   const isHeroTransition = (oldIndex === 0 || targetIndex === 0);
 
-  // ponytail: watchdog — if a stalled video never fires 'ended', force-finish
-  // after 8s instead of freezing navigation forever
+  // Safety nets for the in-flight clip: a fast one for mid-playback stalls
+  // (the common weak-mobile-network case) and a blanket ceiling for
+  // anything that slips past it without ever firing 'ended'.
   const inFlight = goingForward ? transitions[targetIndex].forward : transitions[oldIndex].reverse;
   const token = ++transitionToken;
-  setTimeout(() => {
-    if (isTransitioning && token === transitionToken) {
-      finishWithoutVideo(targetIndex, oldVideo, inFlight);
-    }
-  }, 8000);
+  let safetyNetsLive = true;
+  const cancelSafetyNets = () => {
+    safetyNetsLive = false;
+    clearTimeout(watchdogTimer);
+    detachStallGuard();
+  };
+  const forceFallback = () => {
+    if (!safetyNetsLive || token !== transitionToken) return;
+    cancelSafetyNets();
+    finishWithoutVideo(targetIndex, oldVideo, inFlight);
+  };
+  const watchdogTimer = setTimeout(forceFallback, 5000);
+  const detachStallGuard = attachStallGuard(inFlight, () => {
+    if (isTransitioning) forceFallback();
+  });
 
   if (goingForward) {
     // ——— FORWARD ———
@@ -491,7 +533,7 @@ async function goToScreen(targetIndex) {
 
     // Video never arrived (offline / 4s timeout): skip the cinematic, don't block
     if (video.readyState < 2) {
-      finishWithoutVideo(targetIndex, oldVideo);
+      forceFallback();
       return;
     }
 
@@ -550,6 +592,7 @@ async function goToScreen(targetIndex) {
 
     // End transition on ended
     video.onended = () => {
+      cancelSafetyNets();
       video.pause();
       video.onended = null;
 
@@ -598,7 +641,7 @@ async function goToScreen(targetIndex) {
 
     // Reverse video never arrived (offline / 4s timeout): skip the cinematic
     if (reverseVideo.readyState < 2) {
-      finishWithoutVideo(targetIndex, oldVideo);
+      forceFallback();
       return;
     }
 
@@ -641,6 +684,7 @@ async function goToScreen(targetIndex) {
       setTimeout(fadeOld, 350);
 
       reverseVideo.onended = () => {
+        cancelSafetyNets();
         reverseVideo.pause();
         reverseVideo.onended = null;
 
@@ -689,6 +733,7 @@ async function goToScreen(targetIndex) {
       setTimeout(startPlay, 250);
 
       reverseVideo.onended = () => {
+        cancelSafetyNets();
         reverseVideo.pause();
         reverseVideo.onended = null;
 
@@ -895,7 +940,7 @@ if (preloader && introScreen && introVideo) {
 
   // Set the intro source by tier (slow-net 540p / mobile 720p / desktop 1080p)
   const ext = supportsWebm ? '.webm' : '.mp4';
-  introVideo.src = `${VIDEO_CDN_BASE}${videoDir()}intro${ext}`;
+  introVideo.src = `${videoDir()}intro${ext}`;
 
   introVideo.load();
 
@@ -952,7 +997,7 @@ if (preloader && introScreen && introVideo) {
     // Intro is fully buffered: now fetch hero + transition videos behind it.
     // Hero src is chosen here so a runtime slow-net downgrade affects it.
     if (heroVideo) {
-      heroVideo.src = `${VIDEO_CDN_BASE}${videoDir()}hero${ext}`;
+      heroVideo.src = `${videoDir()}hero${ext}`;
       heroVideo.load();
     }
     startPreloadQueue();
@@ -1000,7 +1045,7 @@ if (preloader && introScreen && introVideo) {
   }
 } else if (heroVideo) {
   const ext = supportsWebm ? '.webm' : '.mp4';
-  heroVideo.src = `${VIDEO_CDN_BASE}${videoDir()}hero${ext}`;
+  heroVideo.src = `${videoDir()}hero${ext}`;
   heroVideo.load();
   startPreloadQueue();
   heroVideo.play().catch(() => {});
