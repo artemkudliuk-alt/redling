@@ -332,11 +332,22 @@ const videoDir = () =>
 function ensureVideoLoaded(video) {
   if (!video) return Promise.resolve();
 
-  if (videoLoadPromises.has(video)) return videoLoadPromises.get(video);
+  // 1. If currently ready, return immediately
+  if (video.readyState >= 2) {
+    return Promise.resolve();
+  }
 
+  // 2. If currently loading (pending promise), return it
+  if (videoLoadPromises.has(video)) {
+    const entry = videoLoadPromises.get(video);
+    if (!entry.resolved) {
+      return entry.promise;
+    }
+  }
+
+  // 3. Otherwise, set src if not set and trigger load, or force reload if buffer was discarded
   if (video.dataset.src && !video.getAttribute('src')) {
     let src = video.dataset.src.replace('assets/video/', videoDir());
-    // Swap extension to webm if supported
     if (supportsWebm) {
       src = src.replace('.mp4', '.webm');
     }
@@ -344,32 +355,31 @@ function ensureVideoLoaded(video) {
     video.removeAttribute('data-src');
     video.preload = 'auto';
     video.load();
+  } else if (video.readyState < 2) {
+    video.load();
   }
 
-  if (video.readyState >= 3) {
-    const ready = Promise.resolve();
-    videoLoadPromises.set(video, ready);
-    return ready;
-  }
-
-  const promise = new Promise((resolve) => {
+  // 4. Create new loading promise
+  const entry = { resolved: false };
+  entry.promise = new Promise((resolve) => {
     const finish = () => {
       video.removeEventListener('canplay', finish);
       video.removeEventListener('canplaythrough', finish);
       video.removeEventListener('loadeddata', finish);
       video.removeEventListener('error', finish);
       clearTimeout(timer);
+      entry.resolved = true;
       resolve();
     };
-    // Safety: never block navigation forever on a slow network
     const timer = setTimeout(finish, 4000);
     video.addEventListener('canplay', finish);
     video.addEventListener('canplaythrough', finish);
     video.addEventListener('loadeddata', finish);
     video.addEventListener('error', finish);
   });
-  videoLoadPromises.set(video, promise);
-  return promise;
+
+  videoLoadPromises.set(video, entry);
+  return entry.promise;
 }
 
 // Background queue: fetch transition videos one at a time (nearest screens
