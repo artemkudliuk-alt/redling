@@ -634,7 +634,7 @@ async function goToScreen(targetIndex) {
     // still NaN, silently landing the seek on frame 0 (the clip's START)
     // instead of its resting END frame. That's the "shows the wrong/first
     // frame after scrolling back" bug: fetched isn't the same as ready.
-    if (!reverseVideo || !targetVideo || reverseVideo.readyState < 2 || targetVideo.readyState < 2) {
+    if (!reverseVideo || !targetVideo || reverseVideo.readyState < 2 || targetVideo.readyState < 1) {
       forceFallback();
       return;
     }
@@ -705,7 +705,8 @@ async function goToScreen(targetIndex) {
       // direct instrumentation: t stays correct without this dance, and
       // resets to 0 the instant play() is called with it). A paused seek
       // repaints on its own; no priming needed.
-      await prepareVideoToPlay(targetVideo, targetVideo.duration - 0.01);
+      // Prepare target resting video underneath in the background (no await to prevent lag before starting the reverse transition)
+      prepareVideoToPlay(targetVideo, targetVideo.duration - 0.01);
 
       reverseVideo.style.opacity = '1';
       
