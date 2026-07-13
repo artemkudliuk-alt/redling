@@ -469,12 +469,16 @@ function finishWithoutVideo(targetIndex, ...hide) {
     resting.style.opacity = '1';
     resting.play().catch(() => {});
   } else if (resting.readyState >= 2) {
+    // Resting pose for any non-hero screen is always its clip's LAST frame,
+    // not wherever currentTime happens to sit (likely 0, never played yet)
+    resting.currentTime = Math.max(0, resting.duration - 0.01);
     resting.style.opacity = '1';
   } else {
     const onReady = () => {
       resting.removeEventListener('loadeddata', onReady);
       resting.removeEventListener('canplay', onReady);
       if (currentScreen !== targetIndex || isTransitioning) return;
+      resting.currentTime = Math.max(0, resting.duration - 0.01);
       resting.style.opacity = '1';
     };
     resting.addEventListener('loadeddata', onReady);
@@ -623,8 +627,14 @@ async function goToScreen(targetIndex) {
     // Make sure both lazy videos are fetched before we try to play them
     await Promise.all([ensureVideoLoaded(reverseVideo), ensureVideoLoaded(targetVideo)]);
 
-    // Reverse video never arrived (offline / 4s timeout): skip the cinematic
-    if (reverseVideo.readyState < 2) {
+    // Either video never arrived (offline / 4s timeout / still buffering
+    // mid rapid-scroll): skip the cinematic instead of revealing targetVideo
+    // with an unknown duration — prepareVideoToPlay below seeks to
+    // targetVideo.duration - 0.01, and on an unready video `duration` is
+    // still NaN, silently landing the seek on frame 0 (the clip's START)
+    // instead of its resting END frame. That's the "shows the wrong/first
+    // frame after scrolling back" bug: fetched isn't the same as ready.
+    if (!reverseVideo || !targetVideo || reverseVideo.readyState < 2 || targetVideo.readyState < 2) {
       forceFallback();
       return;
     }
@@ -686,11 +696,16 @@ async function goToScreen(targetIndex) {
 
     } else {
       // Instant cut transition
-      // Prepare target resting video underneath
+      // Prepare target resting video underneath, paused on its last frame.
+      // No play()+pause() priming here: calling .play() on a video seeked
+      // to duration-0.01 (one frame before the end) races Chromium's
+      // decoder — currentTime snaps back to 0 the instant play() engages,
+      // before pause() lands a moment later, which is exactly the "shows
+      // the wrong/first frame after scrolling back" bug (confirmed by
+      // direct instrumentation: t stays correct without this dance, and
+      // resets to 0 the instant play() is called with it). A paused seek
+      // repaints on its own; no priming needed.
       await prepareVideoToPlay(targetVideo, targetVideo.duration - 0.01);
-      targetVideo.loop = true;
-      targetVideo.play().catch(() => {});
-      targetVideo.pause();
 
       reverseVideo.style.opacity = '1';
       
