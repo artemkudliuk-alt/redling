@@ -322,9 +322,12 @@ const veryBadEffectiveType = conn.effectiveType === 'slow-2g' || conn.effectiveT
 const veryLowDownlink = typeof conn.downlink === 'number' && conn.downlink > 0 && conn.downlink < 0.6;
 let slowNet = !!conn.saveData || veryBadEffectiveType || veryLowDownlink;
 
-// Video folder by tier: mobile -> assets/video/mobile/, desktop -> assets/video/
+// Video folder by tier: slow net -> 540p (assets/video/3g/), phone -> 720p,
+// desktop -> 1080p. assets/video/3g/ exists (24 files, verified) and is used
+// by startPreloadQueue()'s slowNet branch below — routing folder selection
+// through it too, not just the preload strategy.
 const videoDir = () =>
-  isMobile ? 'assets/video/mobile/' : 'assets/video/';
+  slowNet ? 'assets/video/3g/' : (isMobile ? 'assets/video/mobile/' : 'assets/video/');
 
 function ensureVideoLoaded(video) {
   if (!video) return Promise.resolve();
