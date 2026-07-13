@@ -538,7 +538,15 @@ async function goToScreen(targetIndex) {
     cancelSafetyNets();
     finishWithoutVideo(targetIndex, oldVideo, inFlight);
   };
-  const watchdogTimer = setTimeout(forceFallback, 5000);
+  // 5000ms used to be a comfortable multiple of clip length back when clips
+  // ran ~2-3s. A later re-encode extended every clip to ~5.02s, so the
+  // watchdog was firing a few ms BEFORE the video's own natural 'ended' on
+  // every single transition — cutting the cinematic short and revealing the
+  // target screen's text/overlay over a still-mid-playback video every time.
+  // 9000ms comfortably clears the current ~5s clips plus real setup/network
+  // overhead; the fast stall-guard above already handles genuine stalls in
+  // ~1.2s, so this is purely the last-resort catch-all.
+  const watchdogTimer = setTimeout(forceFallback, 9000);
   const detachStallGuard = attachStallGuard(inFlight, () => {
     if (isTransitioning) forceFallback();
   });
