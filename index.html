@@ -101,8 +101,8 @@
   </style>
 
   <link rel="icon" type="image/svg+xml" href="assets/img/logo.svg">
-  <script type="module" crossorigin src="./assets/index-BO09bi3g.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-Cd6X2NtO.css">
+  <script type="module" crossorigin src="./assets/index-CMq4key6.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-sf2G36lP.css">
 </head>
 <body>
 
@@ -413,18 +413,12 @@
   <div id="galleryModal" class="gallery-modal" role="dialog" aria-modal="true" aria-label="Фотогалерея отеля">
     <button id="closeGalleryBtn" class="close-gallery-btn" aria-label="Закрыть галерею">&times;</button>
 
+    <!-- Categories Selector -->
+    <div class="gallery-categories" id="galleryCategories"></div>
+
     <div class="gallery-slider-container">
       <div class="gallery-wrapper" id="galleryWrapper">
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo1.webp" alt="Атмосфера отеля Redling — фото 1" loading="lazy"></div>
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo2.webp" alt="Атмосфера отеля Redling — фото 2" loading="lazy"></div>
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo3.webp" alt="Атмосфера отеля Redling — фото 3" loading="lazy"></div>
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo4.webp" alt="Атмосфера отеля Redling — фото 4" loading="lazy"></div>
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo5.webp" alt="Атмосфера отеля Redling — фото 5" loading="lazy"></div>
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo6.webp" alt="Атмосфера отеля Redling — фото 6" loading="lazy"></div>
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo7.webp" alt="Атмосфера отеля Redling — фото 7" loading="lazy"></div>
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo8.webp" alt="Атмосфера отеля Redling — фото 8" loading="lazy"></div>
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo9.webp" alt="Атмосфера отеля Redling — фото 9" loading="lazy"></div>
-        <div class="gallery-slide"><img src="assets/img/atmosphere/photo10.webp" alt="Атмосфера отеля Redling — фото 10" loading="lazy"></div>
+        <!-- Generated dynamically in main.js -->
       </div>
       
       <!-- Nav Arrows -->
@@ -435,19 +429,8 @@
     <!-- Slide Counter -->
     <div id="galleryCounter" class="gallery-counter">1 / 10</div>
 
-    <!-- Indicators -->
-    <div class="gallery-dots" id="galleryDots">
-      <span class="gallery-dot active" data-index="0"></span>
-      <span class="gallery-dot" data-index="1"></span>
-      <span class="gallery-dot" data-index="2"></span>
-      <span class="gallery-dot" data-index="3"></span>
-      <span class="gallery-dot" data-index="4"></span>
-      <span class="gallery-dot" data-index="5"></span>
-      <span class="gallery-dot" data-index="6"></span>
-      <span class="gallery-dot" data-index="7"></span>
-      <span class="gallery-dot" data-index="8"></span>
-      <span class="gallery-dot" data-index="9"></span>
-    </div>
+    <!-- Thumbnails Strip -->
+    <div class="gallery-thumbnails" id="galleryThumbnails"></div>
   </div>
 
 </body>
