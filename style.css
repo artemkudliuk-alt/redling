@@ -1637,27 +1637,88 @@ h1, h2, h3, h4, h5, h6 {
   right: 20px;
 }
 
-/* Indicators */
-.gallery-dots {
+/* Categories Selector */
+.gallery-categories {
   display: flex;
-  gap: 8px;
-  margin-top: 24px;
+  gap: 12px;
+  margin-bottom: 20px;
+  margin-top: 60px;
   z-index: 10;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 90%;
+  max-width: 1100px;
 }
 
-.gallery-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
+.category-btn {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 20px;
+  border-radius: 25px;
   cursor: pointer;
-  transition: background 0.3s, transform 0.3s;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
-.gallery-dot:hover,
-.gallery-dot.active {
+.category-btn:hover {
+  color: var(--color-white);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.category-btn.active {
+  color: var(--color-white);
   background: var(--color-primary);
-  transform: scale(1.2);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 15px rgba(26, 188, 156, 0.4);
+}
+
+/* Thumbnails Strip */
+.gallery-thumbnails {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  z-index: 10;
+  max-width: 90%;
+  overflow-x: auto;
+  padding: 8px 4px;
+  scrollbar-width: none; /* Hide scrollbar Firefox */
+}
+
+.gallery-thumbnails::-webkit-scrollbar {
+  display: none; /* Hide scrollbar Chrome/Safari */
+}
+
+.gallery-thumbnail {
+  width: 75px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0.4;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.gallery-thumbnail:hover {
+  opacity: 0.8;
+  transform: translateY(-2px);
+}
+
+.gallery-thumbnail.active {
+  opacity: 1;
+  border-color: var(--color-primary);
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 6px 15px rgba(26, 188, 156, 0.3);
 }
 
 /* Close Button */
@@ -1706,8 +1767,22 @@ h1, h2, h3, h4, h5, h6 {
     font-size: 14px;
     padding: 4px 14px;
   }
-  .gallery-dots {
+  .gallery-categories {
+    margin-top: 50px;
+    gap: 8px;
+  }
+  .category-btn {
+    font-size: 12px;
+    padding: 6px 14px;
+  }
+  .gallery-thumbnails {
     margin-top: 15px;
+    gap: 6px;
+    max-width: 95%;
+  }
+  .gallery-thumbnail {
+    width: 50px;
+    height: 35px;
   }
 }
 

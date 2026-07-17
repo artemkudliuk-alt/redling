@@ -1285,12 +1285,20 @@ function initPhotoGallery() {
   const wrapper = document.getElementById('galleryWrapper');
   const prevBtn = document.getElementById('galleryPrevBtn');
   const nextBtn = document.getElementById('galleryNextBtn');
-  const dots = document.querySelectorAll('.gallery-dot');
   
   if (!openGalleryBtn || !galleryModal || !closeGalleryBtn || !wrapper) return;
-  
+
+  const categories = {
+    pool: { title: 'Бассейн', count: 3 },
+    infrastructure: { title: 'Инфраструктура', count: 11 },
+    children: { title: 'Для детей', count: 10 },
+    restaurant: { title: 'Ресторан', count: 9 },
+    kitchen: { title: 'Кухня', count: 5 }
+  };
+
+  let currentCategory = 'pool';
   let currentIdx = 0;
-  const totalSlides = 10;
+  let totalSlides = categories[currentCategory].count;
   
   // Dragging / swiping state
   let isDragging = false;
@@ -1308,23 +1316,88 @@ function initPhotoGallery() {
   };
   
   const counterEl = document.getElementById('galleryCounter');
+  const categoriesContainer = document.getElementById('galleryCategories');
+  const thumbnailsContainer = document.getElementById('galleryThumbnails');
   
-  const setPositionByIndex = () => {
-    const slideWidth = wrapper.offsetWidth;
+  const setPositionByIndex = (smooth = true) => {
+    const slideWidth = wrapper.offsetWidth || 1;
     currentTranslate = -currentIdx * slideWidth;
     prevTranslate = currentTranslate;
-    wrapper.style.transition = 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
+    wrapper.style.transition = smooth ? 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)' : 'none';
     wrapper.style.transform = `translateX(${currentTranslate}px)`;
     
-    // Update dots
-    dots.forEach((dot, index) => {
-      dot.classList.toggle('active', index === currentIdx);
+    // Update active category button
+    categoriesContainer.querySelectorAll('.category-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-category') === currentCategory);
     });
+    
+    // Update active thumbnail and scroll to it
+    const activeThumb = thumbnailsContainer.querySelector(`.gallery-thumbnail[data-index="${currentIdx}"]`);
+    if (activeThumb) {
+      thumbnailsContainer.querySelectorAll('.gallery-thumbnail').forEach(t => t.classList.remove('active'));
+      activeThumb.classList.add('active');
+      
+      const containerWidth = thumbnailsContainer.offsetWidth;
+      const thumbWidth = activeThumb.offsetWidth;
+      const thumbLeft = activeThumb.offsetLeft;
+      thumbnailsContainer.scrollTo({
+        left: thumbLeft - containerWidth / 2 + thumbWidth / 2,
+        behavior: 'smooth'
+      });
+    }
     
     // Update counter
     if (counterEl) {
       counterEl.textContent = `${currentIdx + 1} / ${totalSlides}`;
     }
+  };
+  
+  const renderGallery = (category) => {
+    currentCategory = category;
+    currentIdx = 0;
+    totalSlides = categories[category].count;
+    
+    // Render main slides
+    let slidesHtml = '';
+    for (let i = 1; i <= totalSlides; i++) {
+      slidesHtml += `<div class="gallery-slide"><img src="assets/img/${category}/photo${i}.jpg" alt="${categories[category].title} — фото ${i}" loading="lazy"></div>`;
+    }
+    wrapper.innerHTML = slidesHtml;
+    
+    // Render bottom thumbnails
+    let thumbsHtml = '';
+    for (let i = 1; i <= totalSlides; i++) {
+      thumbsHtml += `<img class="gallery-thumbnail" src="assets/img/${category}/photo${i}.jpg" data-index="${i - 1}" alt="Миниатюра ${i}">`;
+    }
+    thumbnailsContainer.innerHTML = thumbsHtml;
+    
+    // Attach click events to the new thumbnails
+    thumbnailsContainer.querySelectorAll('.gallery-thumbnail').forEach(thumb => {
+      thumb.addEventListener('click', () => {
+        currentIdx = parseInt(thumb.getAttribute('data-index'));
+        setPositionByIndex();
+      });
+    });
+    
+    // Position slider
+    setTimeout(() => {
+      setPositionByIndex(false);
+    }, 10);
+  };
+  
+  const initCategories = () => {
+    let catHtml = '';
+    for (const [key, cat] of Object.entries(categories)) {
+      catHtml += `<button class="category-btn" data-category="${key}">${cat.title}</button>`;
+    }
+    categoriesContainer.innerHTML = catHtml;
+    
+    categoriesContainer.querySelectorAll('.category-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cat = btn.getAttribute('data-category');
+        renderGallery(cat);
+      });
+    });
   };
   
   const nextSlide = () => {
@@ -1351,12 +1424,12 @@ function initPhotoGallery() {
     galleryModal.style.display = 'flex';
     setTimeout(() => {
       galleryModal.classList.add('show');
-      setPositionByIndex(); // recalculate size after display: flex
+      setPositionByIndex(false); // recalculate size after display: flex without transition
     }, 10);
     
     // Disable scroll on parent page
     document.body.style.overflow = 'hidden';
-
+ 
     // Pause active background video loop to save resources
     const activeVideo = getCurrentActiveVideo();
     if (activeVideo) {
@@ -1370,7 +1443,7 @@ function initPhotoGallery() {
       galleryModal.style.display = 'none';
       document.body.style.overflow = 'hidden'; // preserve website slider overflow
     }, 300);
-
+ 
     // Resume background video loop (only if on screen 0)
     const activeVideo = getCurrentActiveVideo();
     if (activeVideo && currentScreen === 0) {
@@ -1389,16 +1462,8 @@ function initPhotoGallery() {
   nextBtn.addEventListener('click', nextSlide);
   prevBtn.addEventListener('click', prevSlide);
   
-  // Dot indicators
-  dots.forEach(dot => {
-    dot.addEventListener('click', () => {
-      currentIdx = parseInt(dot.getAttribute('data-index'));
-      setPositionByIndex();
-    });
-  });
-  
   // Recalculate positions on window resize
-  window.addEventListener('resize', setPositionByIndex);
+  window.addEventListener('resize', () => setPositionByIndex(false));
   
   // Swipe / Drag Events
   const dragStart = (event) => {
@@ -1457,7 +1522,7 @@ function initPhotoGallery() {
   wrapper.addEventListener('mousemove', dragMove);
   wrapper.addEventListener('mouseup', dragEnd);
   wrapper.addEventListener('mouseleave', dragEnd);
-
+ 
   // Keyboard navigation
   document.addEventListener('keydown', (e) => {
     if (!galleryModal.classList.contains('show')) return;
@@ -1469,6 +1534,10 @@ function initPhotoGallery() {
       closeModal();
     }
   });
+
+  // Initialize content
+  initCategories();
+  renderGallery('pool');
 }
 
 initPhotoGallery();
