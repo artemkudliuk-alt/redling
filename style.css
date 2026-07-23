@@ -978,35 +978,122 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Unused work-hours-badge removed to clean up slop */
 
-/* Custom YouTube Button with play icon */
-.btn-youtube-sharp {
+/* Animated YouTube Floating Circular Trigger (Hero Screen Bottom-Right) */
+.hero-video-trigger {
+  position: absolute;
+  right: 60px;
+  bottom: 50px;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  background-color: transparent;
-  color: var(--color-white);
-  border: 2px solid rgba(255, 255, 255, 0.25);
+  gap: 14px;
   text-decoration: none;
-  text-transform: uppercase;
+  z-index: 25;
+  pointer-events: auto;
+  padding: 8px 22px 8px 10px;
+  border-radius: 40px;
+  background: rgba(12, 14, 18, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 0, 0, 0.15);
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+              background-color 0.3s ease,
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
+.hero-video-trigger:hover {
+  transform: translateY(-3px) scale(1.04);
+  background: rgba(18, 20, 26, 0.85);
+  border-color: rgba(255, 0, 0, 0.6);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7), 0 0 25px rgba(255, 0, 0, 0.45);
+}
+
+.play-circle-wrapper {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.play-circle-btn {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(255, 0, 0, 0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-video-trigger:hover .play-circle-btn {
+  transform: scale(1.08);
+  box-shadow: 0 6px 22px rgba(255, 0, 0, 0.85);
+  background: linear-gradient(135deg, #ff1a1a 0%, #e60000 100%);
+}
+
+.play-svg-icon {
+  width: 18px;
+  height: 18px;
+  fill: #ffffff;
+  margin-left: 2px;
+  transition: transform 0.2s ease;
+}
+
+.hero-video-trigger:hover .play-svg-icon {
+  transform: scale(1.15);
+}
+
+.play-pulse-ring {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 0, 0, 0.75);
+  pointer-events: none;
+  animation: playPulse 2.4s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  z-index: 1;
+}
+
+.play-pulse-ring.delay {
+  animation-delay: 0.8s;
+}
+
+@keyframes playPulse {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(1.85);
+    opacity: 0;
+  }
+}
+
+.video-trigger-text {
+  font-family: 'Montserrat', sans-serif;
   font-size: 13px;
   font-weight: 700;
-  letter-spacing: 1.5px;
-  padding: 12px 28px;
-  border-radius: 0;
-  transition: border-color var(--transition-speed), background-color var(--transition-speed);
-}
-
-.btn-youtube-sharp:hover {
-  border-color: #ff0000;
-  background-color: rgba(255, 0, 0, 0.15);
-}
-
-.youtube-icon {
-  width: 16px;
-  height: 16px;
-  color: #ff0000;
-  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--color-white);
+  white-space: nowrap;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  transition: color 0.3s ease;
 }
 
 .badge-title {
@@ -1438,6 +1525,26 @@ h1, h2, h3, h4, h5, h6 {
     padding: 100px 24px 40px;
     margin-top: 0;
   }
+
+  /* Hero floating circular video trigger mobile adjustments */
+  .hero-video-trigger {
+    right: 20px;
+    bottom: 30px;
+    padding: 6px 16px 6px 8px;
+    gap: 10px;
+  }
+  .play-circle-wrapper {
+    width: 38px;
+    height: 38px;
+  }
+  .play-svg-icon {
+    width: 15px;
+    height: 15px;
+  }
+  .video-trigger-text {
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
 }
 
 /* Fullscreen YouTube Modal Player */
@@ -1783,6 +1890,178 @@ h1, h2, h3, h4, h5, h6 {
   .gallery-thumbnail {
     width: 50px;
     height: 35px;
+  }
+}
+
+/* Restaurant Menu Lightbox Popup Modal */
+.menu-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(12, 14, 18, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 250;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  padding: 20px;
+}
+
+.menu-modal.show {
+  display: flex;
+  opacity: 1;
+}
+
+.menu-modal-content {
+  position: relative;
+  width: 90%;
+  max-width: 1000px;
+  height: 88vh;
+  height: 88dvh;
+  background: #11141a;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.85), 0 0 30px rgba(0, 171, 169, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.menu-modal-content.expanded {
+  width: 98%;
+  max-width: 100%;
+  height: 96vh;
+  height: 96dvh;
+  border-radius: 6px;
+}
+
+.menu-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 22px;
+  background: rgba(18, 22, 28, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  user-select: none;
+}
+
+.menu-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-white);
+}
+
+.menu-icon-svg {
+  width: 20px;
+  height: 20px;
+  color: var(--color-primary);
+}
+
+.menu-modal-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.expand-menu-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.expand-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--color-white);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.expand-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.close-menu-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--color-white);
+  font-size: 26px;
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.close-menu-btn:hover {
+  background: #ff0000;
+  color: #ffffff;
+  border-color: #ff0000;
+  transform: scale(1.05);
+}
+
+.menu-iframe-container {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  position: relative;
+}
+
+.menu-iframe-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .menu-modal {
+    padding: 10px;
+  }
+  .menu-modal-content {
+    width: 100%;
+    height: 92vh;
+    height: 92dvh;
+    border-radius: 8px;
+  }
+  .menu-modal-header {
+    padding: 10px 14px;
+  }
+  .menu-modal-title {
+    font-size: 13px;
+    letter-spacing: 0.5px;
+  }
+  .menu-icon-svg {
+    width: 16px;
+    height: 16px;
+  }
+  .expand-menu-btn {
+    display: none;
   }
 }
 

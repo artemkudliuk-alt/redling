@@ -922,6 +922,76 @@ if (closeVideoBtn && videoModal && youtubeIframe) {
 }
 
 // ============================
+// 12.1. Restaurant Menu Lightbox Popup Modal
+// ============================
+function initMenuModal() {
+  const openMenuBtn = document.getElementById('openMenuBtn');
+  const menuModal = document.getElementById('menuModal');
+  const closeMenuModalBtn = document.getElementById('closeMenuModalBtn');
+  const expandMenuBtn = document.getElementById('expandMenuBtn');
+  const menuIframe = document.getElementById('menuIframe');
+  const menuModalContent = menuModal ? menuModal.querySelector('.menu-modal-content') : null;
+
+  if (!openMenuBtn || !menuModal || !menuIframe) return;
+
+  const MENU_URL = "https://menu.ps.me/AeV1G4I3YGQ";
+
+  const closeMenu = () => {
+    menuModal.classList.remove('show');
+    setTimeout(() => {
+      menuModal.style.display = 'none';
+      menuIframe.src = "";
+      if (menuModalContent) menuModalContent.classList.remove('expanded');
+    }, 300);
+
+    const activeVideo = getCurrentActiveVideo();
+    if (activeVideo && currentScreen === 0) {
+      activeVideo.play().catch(() => {});
+    }
+  };
+
+  openMenuBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (!menuIframe.src || menuIframe.src === "about:blank" || menuIframe.src !== MENU_URL) {
+      menuIframe.src = MENU_URL;
+    }
+    menuModal.style.display = 'flex';
+    setTimeout(() => menuModal.classList.add('show'), 10);
+
+    const activeVideo = getCurrentActiveVideo();
+    if (activeVideo) {
+      activeVideo.pause();
+    }
+  });
+
+  if (closeMenuModalBtn) {
+    closeMenuModalBtn.addEventListener('click', closeMenu);
+  }
+
+  if (expandMenuBtn && menuModalContent) {
+    expandMenuBtn.addEventListener('click', () => {
+      menuModalContent.classList.toggle('expanded');
+      const isExpanded = menuModalContent.classList.contains('expanded');
+      expandMenuBtn.setAttribute('aria-label', isExpanded ? 'Свернуть' : 'Развернуть');
+    });
+  }
+
+  menuModal.addEventListener('click', (e) => {
+    if (e.target === menuModal) {
+      closeMenu();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && menuModal.classList.contains('show')) {
+      closeMenu();
+    }
+  });
+}
+
+initMenuModal();
+
+// ============================
 // 13. Preloader -> intro video -> site
 // ============================
 // Last-resort net around the whole bootstrap: on a weak/mangled mobile
@@ -1132,7 +1202,7 @@ const i18nData = {
     "contacts.fact1": "500 метров до моря — 7 минут пешком",
     "contacts.fact2": "ул. Дача Ковалевского, 71, Одесса",
     "contacts.fact3": "10 км до центра — тихий, зелёный район",
-    "contacts.reception": "Ресепшен",
+    "contacts.reception": "Ресепшн",
     "contacts.restaurant": "Ресторан",
     "contacts.email": "Email",
     "contacts.route": "Построить маршрут",
@@ -1232,7 +1302,7 @@ const i18nData = {
     "contacts.fact1": "500 метрів до моря — 7 хвилин пішки",
     "contacts.fact2": "вул. Дача Ковалевського, 71, Одеса",
     "contacts.fact3": "10 км до центру — тихий, зелений район",
-    "contacts.reception": "Ресепшн",
+    "contacts.reception": "Рецепція",
     "contacts.restaurant": "Ресторан",
     "contacts.email": "Email",
     "contacts.route": "Побудувати маршрут",
