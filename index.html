@@ -101,8 +101,8 @@
   </style>
 
   <link rel="icon" type="image/svg+xml" href="assets/img/logo.svg">
-  <script type="module" crossorigin src="./assets/index-CMq4key6.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-sf2G36lP.css">
+  <script type="module" crossorigin src="./assets/index-Z_3Ob2Id.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-Dn_4iqWB.css">
 </head>
 <body>
 
@@ -234,14 +234,22 @@
           <p class="hero-text" data-i18n="hero.text">Всего 500 метров до пляжа, вдали от городского шума.</p>
           <div class="buttons-group">
             <a href="https://redling-hotel.com.ua/booking/" target="_blank" class="btn-cta" data-i18n="hero.cta">Забронировать номер</a>
-            <a href="#" id="openVideoBtn" class="btn-youtube-sharp">
-              <svg class="youtube-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.518 3.545 12 3.545 12 3.545s-7.518 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.87.508 9.388.508 9.388.508s7.518 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-              </svg>
-              <span data-i18n="hero.video">Смотреть видео</span>
-            </a>
           </div>
         </div>
+
+        <!-- Floating Circular YouTube Video Trigger -->
+        <a href="#" id="openVideoBtn" class="hero-video-trigger" aria-label="Смотреть видео">
+          <div class="play-circle-wrapper">
+            <div class="play-pulse-ring"></div>
+            <div class="play-pulse-ring delay"></div>
+            <div class="play-circle-btn">
+              <svg class="play-svg-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 5V19L19 12L8 5Z"/>
+              </svg>
+            </div>
+          </div>
+          <span class="video-trigger-text" data-i18n="hero.video">Смотреть видео</span>
+        </a>
       </section>
 
       <!-- Screen 1: Rooms -->
@@ -313,7 +321,7 @@
           <div class="restaurant-actions-col">
             <div class="buttons-group">
               <a href="https://redling-hotel.com.ua/restaurant/" target="_blank" class="btn-cta" data-i18n="restaurant.cta">Забронировать столик</a>
-              <a href="https://redling-hotel.com.ua/restaurant/#menu" target="_blank" class="btn-secondary" data-i18n="restaurant.menu">Меню ресторана</a>
+              <a href="#" id="openMenuBtn" class="btn-secondary" data-i18n="restaurant.menu">Меню ресторана</a>
             </div>
             <div class="work-hours">
               <div class="work-hours-row">
@@ -361,7 +369,7 @@
             </div>
             <div class="contacts-info">
               <div class="contact-row">
-                <span class="contact-name" data-i18n="contacts.reception">Ресепшен</span>
+                <span class="contact-name" data-i18n="contacts.reception">Ресепшн</span>
                 <a href="tel:+380677387700" class="contact-val">(067) 738 77 00</a>
               </div>
               <div class="contact-row">
@@ -431,6 +439,35 @@
 
     <!-- Thumbnails Strip -->
     <div class="gallery-thumbnails" id="galleryThumbnails"></div>
+  </div>
+
+  <!-- Restaurant Menu Lightbox Popup Modal -->
+  <div id="menuModal" class="menu-modal" role="dialog" aria-modal="true" aria-label="Меню ресторана">
+    <div class="menu-modal-content">
+      <div class="menu-modal-header">
+        <div class="menu-modal-title">
+          <svg class="menu-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+            <line x1="6" y1="1" x2="6" y2="4"></line>
+            <line x1="10" y1="1" x2="10" y2="4"></line>
+            <line x1="14" y1="1" x2="14" y2="4"></line>
+          </svg>
+          <span data-i18n="restaurant.menu">Меню ресторана</span>
+        </div>
+        <div class="menu-modal-controls">
+          <button id="expandMenuBtn" class="expand-menu-btn" title="Развернуть / Свернуть" aria-label="Развернуть">
+            <svg class="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+            </svg>
+          </button>
+          <button id="closeMenuModalBtn" class="close-menu-btn" aria-label="Закрыть меню">&times;</button>
+        </div>
+      </div>
+      <div class="menu-iframe-container">
+        <iframe id="menuIframe" src="" title="Меню ресторана Redling" frameborder="0" allow="fullscreen" loading="lazy"></iframe>
+      </div>
+    </div>
   </div>
 
 </body>
