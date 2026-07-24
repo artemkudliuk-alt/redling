@@ -1202,7 +1202,7 @@ const i18nData = {
     "contacts.fact1": "500 метров до моря — 7 минут пешком",
     "contacts.fact2": "ул. Дача Ковалевского, 71, Одесса",
     "contacts.fact3": "10 км до центра — тихий, зелёный район",
-    "contacts.reception": "Ресепшн",
+    "contacts.reception": "Рецепция",
     "contacts.restaurant": "Ресторан",
     "contacts.email": "Email",
     "contacts.route": "Построить маршрут",
